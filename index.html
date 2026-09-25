@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bendito Sabor · Pastelería artesanal</title>
+<meta name="description" content="Tortas, postres, cupcakes, panadería y dulces artesanales. Encarga por WhatsApp, paga con Nequi, Bancolombia u otros y recibe el mejor sabor en tu puerta.">
+<link rel="icon" href="img/logo.png">
+<link rel="apple-touch-icon" href="img/logo.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Bendito Sabor">
+<meta property="og:image" content="img/logo.png">
+<meta property="og:title" content="Bendito Sabor · Pastelería artesanal">
+<meta property="og:description" content="Tortas, postres y dulces artesanales. Encarga por WhatsApp y recibe el mejor sabor.">
+<meta name="twitter:card" content="summary">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/extra.css">
+</head>
+
+<body>
+
+<!-- ========================================================== -->
+<!-- NAVBAR                                                      -->
+<!-- ========================================================== -->
+<header class="navbar">
+  <div class="container nav-inner">
+    <a href="#inicio" class="logo" aria-label="Bendito Sabor · Inicio">
+      <img src="img/logo.png" alt="Bendito Sabor" class="logo-img">
+    </a>
+
+    <nav>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#inicio"><i class="fa-solid fa-house"></i>Inicio</a></li>
+        <li><a href="#catalogo"><i class="fa-solid fa-layer-group"></i>Catálogo</a></li>
+        <li><a href="#torta"><i class="fa-solid fa-wand-magic-sparkles"></i>Torta a tu gusto</a></li>
+        <li><a href="#garantia"><i class="fa-solid fa-clock-rotate-left"></i>Encargos</a></li>
+        <li><a href="#consultar"><i class="fa-solid fa-magnifying-glass"></i>Consultar</a></li>
+        <li><a href="#pagos"><i class="fa-solid fa-credit-card"></i>Métodos de pago</a></li>
+      </ul>
+    </nav>
+
+    <div class="nav-actions">
+      <div class="social-dock">
+        <a href="#" target="_blank" rel="noopener" aria-label="WhatsApp" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+        <a href="#" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#" target="_blank" rel="noopener" aria-label="TikTok" title="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+      </div>
+      <button class="cart-btn" onclick="abrirPedido(event)" aria-label="Mi pedido">
+        <i class="fa-solid fa-bag-shopping"></i>
+        <span class="txt-hide">Mi pedido</span>
+        <span class="badge" id="cartBadge">0</span>
+      </button>
+      <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menú">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ========================================================== -->
+<!-- HERO                                                        -->
+<!-- ========================================================== -->
+<section class="hero" id="inicio">
+  <div class="container">
+    <div class="hero-copy reveal">
+      <span class="hero-kicker"><i class="fa-solid fa-cake-candles"></i> Pastelería artesanal · Hecho con amor</span>
+      <h1>El sabor que endulza<br>tus <em>momentos.</em></h1>
+      <p class="lead">Tortas, postres, cupcakes, panadería y dulces preparados con ingredientes frescos. Encarga por WhatsApp, paga fácil y recíbelo recién horneado.</p>
+      <div class="hero-btns">
+        <a href="#catalogo" class="btn btn-primary"><i class="fa-solid fa-tags"></i> Ver catálogo</a>
+        <a href="#torta" class="btn btn-outline"><i class="fa-solid fa-wand-magic-sparkles"></i> Diseña tu torta</a>
+      </div>
+      <div class="hero-feats">
+        <span><i class="fa-solid fa-circle-check"></i> Ingredientes frescos</span>
+        <span><i class="fa-solid fa-circle-check"></i> Encargos personalizados</span>
+        <span><i class="fa-solid fa-circle-check"></i> Entrega por WhatsApp</span>
+      </div>
+    </div>
+
+    <div class="hero-scene reveal">
+      <section class="banners" id="banners" aria-label="Promociones">
+        <div class="banner-slider" id="bannerSlider">
+          <div class="banner-track" id="bannerTrack"></div>
+          <button class="banner-arrow prev" id="bannerPrev" onclick="moverBanner(-1)" aria-label="Anterior"><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="banner-arrow next" id="bannerNext" onclick="moverBanner(1)" aria-label="Siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+          <div class="banner-dots" id="bannerDots"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+
+<!-- Cinta -->
+<div class="marquee-wrap">
+  <div class="marquee" id="marquee">
+    <span><i class="fa-solid fa-cake-candles"></i> Tortas de chocolate</span>
+    <span><i class="fa-solid fa-mug-saucer"></i> Tres leches</span>
+    <span><i class="fa-solid fa-cheese"></i> Cheesecake</span>
+    <span><i class="fa-solid fa-cookie-bite"></i> Cupcakes</span>
+    <span><i class="fa-solid fa-mug-hot"></i> Postres</span>
+    <span><i class="fa-solid fa-bread-slice"></i> Panadería</span>
+    <span><i class="fa-solid fa-candy-cane"></i> Dulces</span>
+    <span><i class="fa-solid fa-cake-candles"></i> Tortas de chocolate</span>
+    <span><i class="fa-solid fa-mug-saucer"></i> Tres leches</span>
+    <span><i class="fa-solid fa-cheese"></i> Cheesecake</span>
+    <span><i class="fa-solid fa-cookie-bite"></i> Cupcakes</span>
+    <span><i class="fa-solid fa-mug-hot"></i> Postres</span>
+  </div>
+</div>
+
+<!-- ========================================================== -->
+<!-- CATEGORÍAS                                                 -->
+<!-- ========================================================== -->
+<section class="categories" id="plataformas">
+  <div class="container">
+    <div class="section-title reveal">
+      <span class="eyebrow"><i class="fa-solid fa-layer-group"></i>Categorías</span>
+      <h2>¿Qué antojo tienes hoy?</h2>
+      <p>Toca una categoría para filtrar el catálogo o sigue bajando para ver todo.</p>
+    </div>
+    <div class="cat-grid" id="catGrid"></div>
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- CATÁLOGO                                                    -->
+<!-- ========================================================== -->
+<section class="catalog" id="catalogo">
+  <div class="container">
+    <div class="section-title reveal">
+      <span class="eyebrow"><i class="fa-solid fa-tags"></i>Catálogo</span>
+      <h2>Nuestros productos</h2>
+      <p>Cada producto indica su presentación y disponibilidad. Los encargos personalizados se coordinan por WhatsApp.</p>
+    </div>
+
+    <div class="filter-bar reveal">
+      <div class="search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="Buscar por nombre, ingredientes o categoría…">
+      </div>
+      <div class="chips" id="chips"></div>
+    </div>
+
+    <div class="grid-products" id="productGrid"></div>
+
+    <div class="empty-state" id="emptyState">
+      <i class="fa-solid fa-cake-candles"></i>
+      <h3>No encontramos productos</h3>
+      <p>Intenta con otra palabra o pulsa el botón para ver todo el catálogo.</p>
+      <button class="btn btn-primary" onclick="resetFilters()"><i class="fa-solid fa-rotate-left"></i> Ver todo</button>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- TORTA PERSONALIZADA                                         -->
+<!-- ========================================================== -->
+<section class="custom-cake" id="torta">
+  <div class="container">
+    <div class="cake-banner reveal">
+      <div class="cake-copy">
+        <span class="cake-eyebrow"><i class="fa-solid fa-wand-magic-sparkles"></i> Torta personalizada</span>
+        <h2>Diseña tu torta soñada</h2>
+        <p>Elige el tamaño según las porciones, tu sabor favorito y cuéntanos los detalles de tu ocasión. Te respondemos por WhatsApp para confirmar precio y fecha.</p>
+        <ul class="cake-feats">
+          <li><i class="fa-solid fa-check"></i> 6 tamaños, de 2 a 25 porciones</li>
+          <li><i class="fa-solid fa-check"></i> 9 sabores artesanales</li>
+          <li><i class="fa-solid fa-check"></i> Envía una imagen de referencia</li>
+          <li><i class="fa-solid fa-check"></i> Decoración, texto y detalles a tu gusto</li>
+        </ul>
+        <button class="btn btn-gold" onclick="abrirPersonalizada()"><i class="fa-solid fa-wand-magic-sparkles"></i> Empieza tu diseño</button>
+      </div>
+      <div class="cake-art">
+        <div class="cake-art-ico"><i class="fa-solid fa-cake-candles"></i></div>
+        <div class="cake-art-note"><i class="fa-solid fa-circle-info"></i> Requiere encargo con anticipación (24–48 h)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- PROCESO DE PEDIDO                                          -->
+<!-- ========================================================== ?>
+<section class="howto" id="condiciones">
+  <div class="container">
+    <div class="howto-title reveal">
+      <span class="howto-eyebrow"><i class="fa-solid fa-list-check"></i> Proceso de compra</span>
+      <h2>¿Cómo funciona?</h2>
+      <p>Pedir tu postre favorito es muy fácil y lo disfrutas en minutos.</p>
+    </div>
+
+    <div class="howto-snake">
+      <div class="howto-cell">
+        <div class="howto-card reveal" style="transition-delay:.05s;">
+          <span class="howto-num">01</span>
+          <div class="howto-icon"><i class="fa-solid fa-cake-candles"></i></div>
+          <h3>Elige tu producto</h3>
+          <p>Explora el catálogo y selecciona la torta, postre o dulce que más se te antoje.</p>
+        </div>
+      </div>
+      <div class="howto-cell">
+        <div class="howto-card reveal" style="transition-delay:.15s;">
+          <span class="howto-num">02</span>
+          <div class="howto-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+          <h3>Arma tu encargo</h3>
+          <p>Elige la presentación (porción, mediana o grande) y la cantidad que necesitas.</p>
+        </div>
+      </div>
+      <div class="howto-cell">
+        <div class="howto-card reveal" style="transition-delay:.25s;">
+          <span class="howto-num">03</span>
+          <div class="howto-icon"><i class="fa-solid fa-paper-plane"></i></div>
+          <h3>Envía tu pedido</h3>
+          <p>Completa tus datos de contacto y envíanos tu solicitud por WhatsApp.</p>
+        </div>
+      </div>
+      <div class="howto-cell">
+        <div class="howto-card reveal" style="transition-delay:.05s;">
+          <span class="howto-num">04</span>
+          <div class="howto-icon"><i class="fa-solid fa-credit-card"></i></div>
+          <h3>Realiza el pago</h3>
+          <p>Confirmamos disponibilidad y coordinamos contigo el método de pago.</p>
+        </div>
+      </div>
+      <div class="howto-cell">
+        <div class="howto-card reveal" style="transition-delay:.15s;">
+          <span class="howto-num">05</span>
+          <div class="howto-icon"><i class="fa-solid fa-truck-fast"></i></div>
+          <h3>Preparamos y entregamos</h3>
+          <p>En cuanto se confirma el pago, preparamos tu pedido con amor y coordinamos la entrega.</p>
+        </div>
+      </div>
+      <div class="howto-cell">
+        <div class="howto-card reveal" style="transition-delay:.25s;">
+          <span class="howto-num">06</span>
+          <div class="howto-icon"><i class="fa-solid fa-heart"></i></div>
+          <h3>Disfruta</h3>
+          <p>Comparte su sabor con quien más quieres. ¡Buen provecho!</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="howto-note reveal">
+      <i class="fa-solid fa-circle-info"></i>
+      <span>Las tortas y pasteles personalizados requieren encargo con anticipación. El valor mostrado puede variar según presentación, decoración y disponibilidad.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- ENCARGOS Y CONDICIONES                                     -->
+<!-- ========================================================== -->
+<section class="warranty" id="garantia">
+  <div class="container">
+    <div class="section-title reveal">
+      <span class="eyebrow"><i class="fa-solid fa-clock-rotate-left"></i>Encargos</span>
+      <h2>Encarga con confianza</h2>
+      <p>Preparamos cada pedido con dedicación y te acompañamos en cada paso.</p>
+    </div>
+
+    <div class="warranty-grid">
+      <div class="war-card reveal">
+        <div class="war-ico"><i class="fa-solid fa-clock"></i></div>
+        <h3>Encargo con anticipación</h3>
+        <p>Para tortas y pasteles personalizados, escríbenos con al menos 24 a 48 horas. Así garantizamos tu fecha y la frescura del producto.</p>
+      </div>
+      <div class="war-card gold reveal" style="transition-delay:.1s;">
+        <div class="war-ico"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+        <h3>Personalización</h3>
+        <p>Elaboramos tu torta a tu gusto: rellenos, cobertura, texto y motivo. Cuéntanos tu idea y la hacemos realidad.</p>
+      </div>
+      <div class="war-card reveal" style="transition-delay:.2s;">
+        <div class="war-ico"><i class="fa-solid fa-headset"></i></div>
+        <h3>Atención en el despacho</h3>
+        <p>Confirmamos disponibilidad y coordinamos la entrega a domicilio o el punto de recogida por WhatsApp.</p>
+      </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- CLIENTES FELICES (carrusel de fotos)                      -->
+    <!-- ========================================================== -->
+    <div class="galeria reveal" id="galeria">
+      <div class="galeria-head">
+        <div>
+          <span class="galeria-kicker"><i class="fa-solid fa-camera-retro"></i>Clientes felices</span>
+          <h3>Historias que endulzan</h3>
+          <p>Ellos ya probaron nuestro sabor. Ahora te toca a ti.</p>
+        </div>
+        <div class="galeria-acc">
+          <button class="gal-arrow prev" id="galPrev" onclick="moverGaleria(-1)" aria-label="Foto anterior"><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="gal-arrow next" id="galNext" onclick="moverGaleria(1)" aria-label="Foto siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+      <div class="galeria-slider" id="galeriaSlider" role="region" aria-label="Fotos de clientes felices" tabindex="0">
+        <div class="galeria-track" id="galeriaTrack"></div>
+      </div>
+      <div class="galeria-dots" id="galeriaDots"></div>
+      <p class="galeria-empty" id="galeriaEmpty">Pronto vayas a ver aquí las fotos de nuestros clientes felices.</p>
+    </div>
+
+    <div class="terms-box reveal">
+      <h3><i class="fa-solid fa-scale-balanced"></i> Condiciones del encargo</h3>
+      <ol>
+        <li>El pedido se confirma por WhatsApp después de validar tu pago y verificar la disponibilidad.</li>
+        <li>Los encargos personalizados (tortas con texto, motivos o rellenos especiales) deben solicitarse con anticipación según la fecha.</li>
+        <li>El valor final puede variar según la presentación, decoración e ingredientes solicitados.</li>
+        <li>Las promociones aplican según las fechas indicadas y la disponibilidad de cada producto.</li>
+        <li>Nuestro compromiso cubre la calidad y frescura del producto al momento de la entrega; no cubre el mal transporte posterior por tu cuenta.</li>
+        <li>Para dudas, cambios o reclamos, contáctanos por WhatsApp con tu nombre y el número de pedido.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- CONTACTO                                                    -->
+<!-- ========================================================== -->
+<section class="contact" id="contacto">
+  <div class="container">
+    <div class="contact-grid">
+      <div class="reveal">
+        <div class="section-title" style="text-align:left;">
+          <span class="eyebrow"><i class="fa-solid fa-envelope-open-text"></i>Contacto</span>
+          <h2>Hablemos de tu próximo antojo</h2>
+          <p>Resolvemos dudas, atendemos pedidos y coordinamos tu entrega.</p>
+        </div>
+        <div class="contact-cards">
+          <div class="contact-row">
+            <div class="ic ic-wa"><i class="fa-brands fa-whatsapp"></i></div>
+            <div class="txt"><small>WhatsApp</small><br><b>Escríbenos por WhatsApp</b></div>
+          </div>
+          <div class="contact-row">
+            <div class="ic ic-mail"><i class="fa-solid fa-envelope"></i></div>
+            <div class="txt"><small>Correo</small><br><b>contacto@benditosabor.com</b></div>
+          </div>
+          <div class="contact-row">
+            <div class="ic ic-ig"><i class="fa-brands fa-instagram"></i></div>
+            <div class="txt"><small>Instagram</small><br><b>@benditosabor</b></div>
+          </div>
+          <div class="contact-row">
+            <div class="ic ic-tt"><i class="fa-brands fa-tiktok"></i></div>
+            <div class="txt"><small>TikTok</small><br><b>@benditosabor</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="contact-hero reveal">
+        <h3>¿Listo para endulzar tu día?</h3>
+        <p>Escríbenos por WhatsApp y te ayudamos a elegir tu torta o postre ideal, con entrega coordinada y el mejor sabor.</p>
+        <a href="#" target="_blank" rel="noopener" class="btn btn-gold"><i class="fa-brands fa-whatsapp"></i> Escríbenos por WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- CONSULTA TU PEDIDO                                         -->
+<!-- ========================================================== -->
+<section class="consulta" id="consultar">
+  <div class="container">
+    <div class="section-title reveal">
+      <span class="eyebrow"><i class="fa-solid fa-magnifying-glass"></i> Seguimiento</span>
+      <h2>¿Ya pediste? Consulta tu pedido</h2>
+      <p>Ingresa el código que recibiste (BS-XXXXXX) para ver si tu pedido está siendo atendido, ya fue entregado o está en proceso.</p>
+    </div>
+    <div class="consulta-box reveal">
+      <div class="search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="consCodigo" placeholder="Ej: BS-123456" maxlength="10" onkeydown="if(event.key==='Enter'){consultarPedido();}">
+      </div>
+      <button class="btn btn-primary" onclick="consultarPedido()"><i class="fa-solid fa-magnifying-glass"></i> Consultar</button>
+    </div>
+    <div id="consResult"></div>
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- MÉTODOS DE PAGO                                             -->
+<!-- ========================================================== -->
+<section class="pagos" id="pagos">
+  <div class="container">
+    <div class="section-title reveal">
+      <span class="eyebrow"><i class="fa-solid fa-credit-card"></i> Métodos de pago</span>
+      <h2>¿A dónde consignar?</h2>
+      <p>Elige tu método y transfiere al dato correspondiente. Después adjunta la captura como comprobante en tu pedido.</p>
+    </div>
+    <div class="pagos-grid">
+      <div class="pago-card reveal">
+        <div class="pago-ico"><i class="fa-solid fa-mobile-screen"></i><b>Nequi</b></div>
+        <div class="pago-row"><small>Número</small><span>300 000 0000</span></div>
+        <div class="pago-row"><small>Alias</small><span>benditosabor</span></div>
+        <div class="pago-row"><small>Titular</small><span>Nombre Apellido</span></div>
+      </div>
+      <div class="pago-card reveal">
+        <div class="pago-ico"><i class="fa-solid fa-building-columns"></i><b>Bancolombia</b></div>
+        <div class="pago-row"><small>Cuenta de ahorros</small><span>000 000000 00</span></div>
+        <div class="pago-row"><small>Titular</small><span>Nombre Apellido</span></div>
+      </div>
+      <div class="pago-card reveal">
+        <div class="pago-ico"><i class="fa-solid fa-mobile-screen-button"></i><b>Daviplata</b></div>
+        <div class="pago-row"><small>Número</small><span>300 000 0000</span></div>
+        <div class="pago-row"><small>Titular</small><span>Nombre Apellido</span></div>
+      </div>
+      <div class="pago-card reveal">
+        <div class="pago-ico"><i class="fa-solid fa-receipt"></i><b>Efecty</b></div>
+        <div class="pago-row"><small>Corresponsal</small><span>Efecty</span></div>
+        <div class="pago-row"><small>Número de referencia</small><span>000000000</span></div>
+        <div class="pago-row"><small>Beneficiario</small><span>Nombre Apellido</span></div>
+      </div>
+    </div>
+    <div class="pago-note reveal"><i class="fa-solid fa-circle-info"></i><span>Estos datos son de ejemplo: confirma los valores reales en el momento de tu compra o al escribirnos por WhatsApp.</span></div>
+  </div>
+</section>
+
+<!-- ========================================================== -->
+<!-- FOOTER                                                      -->
+<!-- ========================================================== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="f-logo">
+          <img src="img/logo.png" alt="Bendito Sabor" class="f-logo-img">
+        </div>
+        <p class="tagline">“El sabor que endulza tus momentos.”</p>
+        <div class="foot-social">
+          <a href="#" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+          <a href="#" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" target="_blank" rel="noopener" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+        </div>
+      </div>
+      <div>
+        <h4>Explora</h4>
+        <ul>
+          <li><a href="#inicio">Inicio</a></li>
+          <li><a href="#catalogo">Catálogo</a></li>
+          <li><a href="#torta">Torta a tu gusto</a></li>
+          <li><a href="#garantia">Encargos</a></li>
+          <li><a href="#consultar">Consultar pedido</a></li>
+          <li><a href="#pagos">Métodos de pago</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contacto</h4>
+        <ul>
+          <li><a href="#" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp" style="margin-right:.4rem;"></i>WhatsApp</a></li>
+          <li><a href="mailto:contacto@benditosabor.com"><i class="fa-regular fa-envelope" style="margin-right:.4rem;"></i>contacto@benditosabor.com</a></li>
+          <li><a href="#" target="_blank" rel="noopener"><i class="fa-brands fa-instagram" style="margin-right:.4rem;"></i>Instagram</a></li>
+          <li><a href="#" target="_blank" rel="noopener"><i class="fa-brands fa-tiktok" style="margin-right:.4rem;"></i>TikTok</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © 2026 Bendito Sabor. Todos los derechos reservados. · Hecho con <i class="fa-solid fa-heart heart"></i> y mucho sabor.
+      <a href="admin.html" class="admin-link" title="Acceso administrador" aria-label="Acceso administrador"><i class="fa-solid fa-lock"></i></a>
+    </div>
+  </div>
+</footer>
+
+<!-- ========================================================== -->
+<!-- DRAWER: MI PEDIDO                                           -->
+<!-- ========================================================== -->
+<aside class="drawer" id="cartDrawer">
+  <div class="drawer-backdrop" onclick="cerrarPedido()"></div>
+  <div class="drawer-panel">
+    <div class="drawer-head">
+      <h3><i class="fa-solid fa-bag-shopping"></i> Mi pedido</h3>
+      <button class="modal-close" style="position:static;" onclick="cerrarPedido()" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="drawer-body" id="drawerBody"></div>
+    <div class="drawer-foot" id="drawerFoot"></div>
+  </div>
+</aside>
+
+<!-- ========================================================== -->
+<!-- MODAL: DETALLE DE PRODUCTO                                 -->
+<!-- ========================================================== -->
+<div class="modal" id="productModal">
+  <div class="modal-backdrop" onclick="cerrarCuenta()"></div>
+  <div class="modal-dialog">
+    <button class="modal-close" onclick="cerrarCuenta()" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+    <div class="product-modal-head" id="pmHead"></div>
+    <div class="product-modal-body" id="pmBody"></div>
+  </div>
+</div>
+
+<!-- ========================================================== -->
+<!-- MODAL: SOLICITAR PEDIDO                                     -->
+<!-- ========================================================== -->
+<div class="modal" id="orderModal">
+  <div class="modal-backdrop" onclick="cerrarPedidoModal()"></div>
+  <div class="modal-dialog" style="max-width:600px;">
+    <button class="modal-close" onclick="cerrarPedidoModal()" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+
+    <div id="orderFormView">
+      <div class="product-modal-body">
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.4rem;">
+          <i class="fa-solid fa-paper-plane" style="color:var(--naranja-oscuro);"></i>
+          <h3 style="font-size:1.4rem;">Solicitar pedido</h3>
+        </div>
+        <p style="font-size:.9rem;color:var(--texto-claro);margin-bottom:1.2rem;">Cuéntanos tus datos y te escribimos por WhatsApp para confirmar disponibilidad, pago y entrega.</p>
+
+        <div class="order-resume" id="orderResume"></div>
+
+        <form id="orderForm" novalidate>
+          <div class="form-grid">
+            <div class="field full">
+              <label for="oNombre">Nombre completo *</label>
+              <input type="text" id="oNombre" maxlength="80" placeholder="Tu nombre">
+              <span class="msg">Ingresa tu nombre.</span>
+            </div>
+            <div class="field">
+              <label for="oWhats">WhatsApp *</label>
+              <input type="tel" id="oWhats" maxlength="20" placeholder="300 123 4567">
+              <span class="msg">Ingresa tu WhatsApp.</span>
+            </div>
+            <div class="field">
+              <label for="oCorreo">Correo *</label>
+              <input type="email" id="oCorreo" maxlength="120" placeholder="tucorreo@email.com">
+              <span class="msg">Correo no válido.</span>
+            </div>
+            <div class="field full">
+              <label for="oMetodoPago">Método de pago *</label>
+              <select id="oMetodoPago">
+                <option value="">Selecciona el método de pago…</option>
+                <option value="Nequi">Nequi</option>
+                <option value="Bancolombia">Bancolombia</option>
+                <option value="Daviplata">Daviplata</option>
+                <option value="Efecty">Efecty</option>
+                <option value="Otro">Otro</option>
+              </select>
+              <span class="msg">Selecciona tu método de pago.</span>
+            </div>
+            <div class="field full">
+              <label>Comprobante de pago *</label>
+              <div class="comprobante-zone">
+                <div class="cap-drop" id="capDrop">
+                  <i class="fa-solid fa-cloud-arrow-up"></i>
+                  <span>Sube aquí la captura de tu pago</span>
+                  <small>JPG o PNG · Máximo 5 MB</small>
+                </div>
+                <input type="file" id="capFile" accept="image/jpeg,image/png,image/webp" hidden>
+                <div class="cap-preview hidden" id="capPreviewWrap">
+                  <img id="capPreview" alt="Vista previa del comprobante">
+                  <button type="button" class="cap-quitar" id="capQuitar"><i class="fa-solid fa-trash-can"></i> Quitar</button>
+                </div>
+              </div>
+              <span class="msg">Adjunta la captura de tu pago.</span>
+            </div>
+          </div>
+          <input type="text" name="website" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <button type="submit" class="btn btn-primary btn-block" style="margin-top:1.1rem;">
+            <i class="fa-solid fa-paper-plane"></i> Enviar solicitud
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="order-success" id="orderSuccess">
+      <div class="big-ico"><i class="fa-solid fa-check"></i></div>
+      <h3 style="margin-bottom:.5rem;">¡Solicitud recibida!</h3>
+      <p style="color:var(--texto-claro);margin-bottom:1.4rem;">Gracias por confiar en Bendito Sabor. Recibimos tu pedido y tu comprobante de pago. Te contactaremos para confirmarlo y coordinar tu entrega.</p>
+      <div class="order-code" id="orderCode" style="display:none;">
+        <small>Tu código de seguimiento</small>
+        <b>BS-000000</b>
+        <span>Guárdalo: con él puedes <a href="#consultar">consultar tu pedido</a> y darle seguimiento.</span>
+      </div>
+      <a class="btn btn-gold" id="waOrderBtn" href="#" target="_blank" rel="noopener">
+        <i class="fa-brands fa-whatsapp"></i> Continuar por WhatsApp
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================== -->
+<!-- MODAL: TORTA PERSONALIZADA                                  -->
+<!-- ========================================================== -->
+<div class="modal" id="cakeModal">
+  <div class="modal-backdrop" onclick="cerrarPersonalizada()"></div>
+  <div class="modal-dialog" style="max-width:680px;">
+    <button class="modal-close" onclick="cerrarPersonalizada()" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+
+    <div class="cake-head" id="cakeHead">
+      <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Torta personalizada</h3>
+      <div class="cake-steps">
+        <span class="cstep active" id="cStep1">1 · Tamaño</span>
+        <span class="cstep" id="cStep2">2 · Sabor</span>
+        <span class="cstep" id="cStep3">3 · Diseño</span>
+        <span class="cstep" id="cStep4">4 · Detalles</span>
+      </div>
+      <div class="cake-progress"><span id="cakeProgressBar"></span></div>
+    </div>
+
+    <div class="cake-body" id="cakeBodyWrap">
+
+      <!-- PASO 1: TAMAÑO -->
+      <div class="cake-panel active" id="cPanel1">
+        <h4>1. Escoge el tamaño de tu torta</h4>
+        <p class="cake-sub">Según el número de porciones</p>
+        <div class="cake-grid cake-tam" id="cakeTamGrid"></div>
+        <p class="cake-tip"><i class="fa-solid fa-lightbulb"></i> ¿No sabes cuánto pides? En casi todos los postres una porción es un triángulo clásico. Si dudas, escríbenos.</p>
+      </div>
+
+      <!-- PASO 2: SABOR -->
+      <div class="cake-panel" id="cPanel2">
+        <h4>2. Escoge tu sabor favorito</h4>
+        <p class="cake-sub">Selecciona uno</p>
+        <div class="cake-grid cake-sabores" id="cakeSaborGrid"></div>
+      </div>
+
+      <!-- PASO 3: DISEÑO -->
+      <div class="cake-panel" id="cPanel3">
+        <h4>3. Diseño</h4>
+        <p class="cake-sub">Puedes enviar una imagen de referencia de tu torta deseada</p>
+        <div class="comprobante-zone">
+          <div class="cap-drop" id="refDrop">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <span>Sube aquí tu imagen de referencia</span>
+            <small>JPG o PNG · Máximo 5 MB · Opcional</small>
+          </div>
+          <input type="file" id="refFile" accept="image/jpeg,image/png,image/webp" hidden>
+          <div class="cap-preview hidden" id="refPreviewWrap">
+            <img id="refPreview" alt="Imagen de referencia">
+            <button type="button" class="cap-quitar" id="refQuitar"><i class="fa-solid fa-trash-can"></i> Quitar imagen</button>
+          </div>
+        </div>
+        <div class="field" style="margin-top:1rem;">
+          <label for="cDecoracion">Decoración o tema * <small class="req">(obligatorio)</small></label>
+          <input type="text" id="cDecoracion" maxlength="200" placeholder="Ej: Tema floral, dedicatoria, colores pastel…">
+          <span class="msg">Describe la decoración o el tema de tu torta.</span>
+        </div>
+        <p class="cake-req"><i class="fa-solid fa-circle-info"></i> Escribe la decoración o sube una imagen de referencia: sin esto no puedes continuar.</p>
+      </div>
+
+      <!-- PASO 4: DETALLES -->
+      <div class="cake-panel" id="cPanel4">
+        <h4>4. Cuéntanos los detalles</h4>
+        <p class="cake-sub">Todos los campos marcados con * son obligatorios</p>
+        <div class="form-grid">
+          <div class="field">
+            <label for="cOcasion">Ocasión</label>
+            <input type="text" id="cOcasion" maxlength="80" placeholder="Ej: Cumpleaños, aniversario…">
+          </div>
+          <div class="field">
+            <label for="cFecha">Fecha del evento</label>
+            <input type="date" id="cFecha">
+          </div>
+          <div class="field full">
+            <label for="cMensaje">Cuéntanos lo que necesitas *</label>
+            <textarea id="cMensaje" rows="3" maxlength="600" placeholder="Rellenos, cobertura, texto de la dedicatoria, número de velas…"></textarea>
+            <span class="msg">Escribe al menos 10 caracteres para tu encargo.</span>
+          </div>
+          <div class="field">
+            <label for="cNombre">Tu nombre *</label>
+            <input type="text" id="cNombre" maxlength="80" placeholder="Tu nombre">
+            <span class="msg">Ingresa tu nombre.</span>
+          </div>
+          <div class="field">
+            <label for="cWhats">WhatsApp *</label>
+            <input type="tel" id="cWhats" maxlength="20" placeholder="300 123 4567">
+            <span class="msg">Ingresa tu WhatsApp.</span>
+          </div>
+          <div class="field full">
+            <label for="cCorreo">Correo *</label>
+            <input type="email" id="cCorreo" maxlength="120" placeholder="tucorreo@email.com">
+            <span class="msg">Correo no válido.</span>
+            <small style="font-size:.72rem;color:var(--texto-claro);font-weight:400;">Lo usamos para responder tu encargo y enviarte novedades de Bendito Sabor.</small>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="cake-foot" id="cakeFoot">
+      <button class="btn btn-ghost" id="cBack" onclick="cakePaso(-1)"><i class="fa-solid fa-arrow-left"></i> Atrás</button>
+      <button class="btn btn-primary" id="cNext" onclick="cakePaso(1)">Continuar <i class="fa-solid fa-arrow-right"></i></button>
+      <button class="btn btn-gold hidden" id="cSubmit" onclick="enviarEncargo(this)"><i class="fa-solid fa-paper-plane"></i> Enviar por WhatsApp</button>
+    </div>
+
+    <div class="cake-success hidden" id="cakeSuccess">
+      <div class="big-ico"><i class="fa-solid fa-check"></i></div>
+      <h3>¡Encargo recibido!</h3>
+      <p style="color:var(--texto-claro);margin-bottom:1.4rem;">Gracias por confiar en Bendito Sabor. Te escribiremos por WhatsApp para confirmar tu torta, el precio y la fecha de entrega.</p>
+      <div class="order-code" id="cakeCode" style="display:none;">
+        <small>Tu código de encargo</small>
+        <b>BS-000000</b>
+        <span>Guárdalo: con él puedes <a href="#consultar">consultar el estado</a> de tu encargo.</span>
+      </div>
+      <a class="btn btn-gold" id="waEncargoBtn" href="#" target="_blank" rel="noopener">
+        <i class="fa-brands fa-whatsapp"></i> Continuar por WhatsApp
+      </a>
+      <button class="btn btn-ghost" style="width:100%;margin-top:.6rem;" onclick="cerrarPersonalizada()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================== -->
+<!-- TOAST + BOTÓN FLOTANTE                                      -->
+<!-- ========================================================== -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<button class="floating-cart" id="floatingCart" onclick="abrirPedido(event)">
+  <i class="fa-solid fa-bag-shopping"></i> Mi pedido
+  <span class="f-badge" id="fBadge">0</span>
+</button>
+<script src="js/config.js"></script>
+<script src="js/store.js"></script>
+</body>
+</html>

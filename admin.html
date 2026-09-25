@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bendito Sabor · Administrador</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="loginView" class="view">
+  <div class="login-card">
+    <div class="login-logo">
+      <img src="img/logo.png" alt="Bendito Sabor" style="max-width:100%;height:auto;">
+    </div>
+    <h2>Acceso administrador</h2>
+    <p class="login-sub">Inicia sesión para gestionar el catálogo</p>
+    <form id="loginForm" novalidate>
+      <label>Email
+        <input type="email" id="admEmail" autocomplete="email" required>
+      </label>
+      <label>Contraseña
+        <input type="password" id="admPass" autocomplete="current-password" required>
+      </label>
+      <span class="msg" id="loginMsg"></span>
+      <button type="submit" class="btn primary block"><i class="fa-solid fa-right-to-bracket"></i> Iniciar sesión</button>
+    </form>
+    <a class="volver" href="index.html"><i class="fa-solid fa-arrow-left"></i> Volver a la tienda</a>
+  </div>
+</div>
+
+<!-- ============ DASHBOARD ============ -->
+<div id="dashView" class="view dashview hidden">
+  <div class="dash-grid">
+    <aside class="adm-nav">
+      <div class="nav-brand">
+        <img src="img/logo.png" alt="Bendito Sabor">
+        <span><small>Pastelería · Admin</small></span>
+      </div>
+
+      <nav class="nav-links">
+        <button class="nav-link active" id="btnNavProductos" title="Productos"><i class="fa-solid fa-cake-candles"></i><span>Productos</span></button>
+        <button class="nav-link" id="btnNavPedidos" title="Pedidos"><i class="fa-solid fa-bag-shopping"></i><span>Pedidos</span><em class="nav-badge" id="badgePedidos">0</em></button>
+        <button class="nav-link" id="btnNavVentas" title="Ventas y garantías"><i class="fa-solid fa-chart-line"></i><span>Ventas</span></button>
+        <button class="nav-link" id="btnNavContabilidad" title="Contabilidad"><i class="fa-solid fa-calculator"></i><span>Contabilidad</span></button>
+        <button class="nav-link" id="btnNavCorreos" title="Correos masivos"><i class="fa-solid fa-paper-plane"></i><span>Correos</span></button>
+        <button class="nav-link" id="btnNavBanners" title="Publicidad"><i class="fa-solid fa-bullhorn"></i><span>Publicidad</span></button>
+        <button class="nav-link" id="btnNavGaleria" title="Clientes felices"><i class="fa-solid fa-camera-retro"></i><span>Clientes felices</span></button>
+        <a class="nav-link" href="index.html" target="_blank" title="Ver tienda"><i class="fa-solid fa-store"></i><span>Ver tienda</span></a>
+      </nav>
+
+      <div class="nav-foot">
+        <button class="nav-link" id="btnLogout" title="Cerrar sesión"><i class="fa-solid fa-right-from-bracket"></i><span>Cerrar sesión</span></button>
+      </div>
+    </aside>
+
+    <main class="adm-main">
+      <!-- PRODUCTOS -->
+      <section class="view-sec" id="productosView">
+        <div class="adm-top">
+          <div>
+            <h1>Productos</h1>
+            <p class="sub">Estos productos se muestran en la tienda online</p>
+          </div>
+          <button class="btn primary" id="btnNuevo"><i class="fa-solid fa-plus"></i> Nuevo producto</button>
+        </div>
+
+        <div class="stats" id="stats"></div>
+
+        <div class="adm-toolbar">
+          <div class="search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="admSearch" placeholder="Buscar por nombre o descripción…">
+          </div>
+          <select id="admFiltroCat"></select>
+        </div>
+
+        <div class="adm-list" id="admList"></div>
+        <div class="empty-adm hidden" id="admEmpty">No hay productos con esos filtros.</div>
+
+        <p class="hint"><i class="fa-solid fa-circle-info"></i> Consejo: deja el precio vacío para mostrar "Consultar" en la tienda. El stock muestra cuántas unidades quedan y el sistema marca "Agotado" cuando llega a 0. Las promos se activan solas según las fechas que definas.</p>
+      </section>
+
+      <!-- PEDIDOS -->
+      <section class="view-sec hidden" id="pedidosView">
+        <div class="adm-top">
+          <div>
+            <h1>Pedidos</h1>
+            <p class="sub">Pedidos solicitados desde la tienda</p>
+          </div>
+        </div>
+
+        <div class="adm-toolbar">
+          <div class="search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="solSearch" placeholder="Buscar por nombre, WhatsApp, correo, mensaje o código…">
+          </div>
+          <select id="solFiltroEstado">
+            <option value="">Todos los estados</option>
+            <option value="nueva">Nueva</option>
+            <option value="vista">Vista</option>
+            <option value="atendida">Atendida</option>
+            <option value="garantia">Garantía</option>
+            <option value="cerrada">Cerrada</option>
+          </select>
+        </div>
+
+        <div class="sol-list" id="solList"></div>
+        <div class="empty-adm hidden" id="solEmpty">No hay pedidos con esos filtros.</div>
+
+        <p class="hint"><i class="fa-solid fa-circle-info"></i> Cada pedido se guarda automáticamente en Supabase cuando el cliente envía el formulario en la tienda, además del mensaje de WhatsApp. Al marcar <b>Atendida</b> se descuenta el stock automáticamente (una sola vez) y la venta pasa al registro de "Ventas".</p>
+      </section>
+
+      <!-- VENTAS -->
+      <section class="view-sec hidden" id="ventasView">
+        <div class="adm-top">
+          <div>
+            <h1>Ventas y garantías</h1>
+            <p class="sub">Registro de ventas cerradas para llevar el control de las garantías</p>
+          </div>
+        </div>
+
+        <div class="stats" id="ventaStats"></div>
+
+        <div class="adm-toolbar">
+          <div class="search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="ventaSearch" placeholder="Buscar por código, nombre o WhatsApp…">
+          </div>
+          <select id="ventaFiltroEstado">
+            <option value="">Todos los estados</option>
+            <option value="atendida">Atendida</option>
+            <option value="garantia">En garantía</option>
+            <option value="cerrada">Cerrada</option>
+          </select>
+          <select id="ventaFiltroMetodo">
+            <option value="">Todos los métodos</option>
+            <option value="Nequi">Nequi</option>
+            <option value="Bancolombia">Bancolombia</option>
+            <option value="Daviplata">Daviplata</option>
+            <option value="Efecty">Efecty</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+
+        <div class="sol-list" id="ventaList"></div>
+        <div class="empty-adm hidden" id="ventaEmpty">No hay ventas con esos filtros. Solo se registran aquí los pedidos que marcaste como "Atendida" (una vez vendidos).</div>
+
+        <p class="hint"><i class="fa-solid fa-circle-info"></i> Cuando un pedido está en <b>Garantía</b>, quédale el seguimiento: el cliente puede consultar el estado desde la tienda con su código de pedido.</p>
+      </section>
+
+      <!-- CONTABILIDAD -->
+      <section class="view-sec hidden" id="contabilidadView">
+        <div class="adm-top">
+          <div>
+            <h1>Contabilidad</h1>
+            <p class="sub">Utilidad del mes: ingresos − costo de ventas − gastos</p>
+          </div>
+          <div class="cont-top-acc">
+            <label class="cont-mes"><i class="fa-solid fa-calendar-days"></i>
+              <input type="month" id="contMes">
+            </label>
+          </div>
+        </div>
+
+        <div class="stats" id="contStats"></div>
+
+        <div class="cont-grid">
+          <div class="cont-card cont-resumen">
+            <h3><i class="fa-solid fa-chart-simple"></i> Resumen del mes</h3>
+            <div id="contDesglose"></div>
+            <p class="hint" style="margin-top:.9rem;"><i class="fa-solid fa-circle-info"></i> Los encargos personalizados cuentan como ingreso cuando les asignas un valor con <b>“Cotizar valor”</b> y los marcas como <b>Atendida</b>.</p>
+          </div>
+
+          <div class="cont-card cont-gastos">
+            <div class="cont-gastos-head">
+              <h3><i class="fa-solid fa-receipt"></i> Gastos del mes</h3>
+              <button class="btn small primary" id="btnNuevoGasto"><i class="fa-solid fa-plus"></i> Registrar gasto</button>
+            </div>
+            <form id="gastoForm" class="gasto-form hidden" novalidate>
+              <div class="grid2">
+                <label>Concepto *<input type="text" id="gConcepto" placeholder="Ej: Insumos de chocolate" required></label>
+                <label>Categoría
+                  <select id="gCategoria">
+                    <option>Insumos</option>
+                    <option>Mano de obra</option>
+                    <option>Empaques</option>
+                    <option>Transporte</option>
+                    <option>Servicios públicos</option>
+                    <option>Renta</option>
+                    <option>Publicidad</option>
+                    <option>Marketing</option>
+                    <option>Otro</option>
+                  </select>
+                </label>
+                <label>Valor (COP) *<input type="number" id="gValor" min="0" step="1000" placeholder="0" required></label>
+                <label>Fecha <input type="date" id="gFecha"></label>
+                <label class="full">Nota (opcional)<input type="text" id="gDescripcion" placeholder="Detalle del gasto…"></label>
+              </div>
+              <div class="gasto-acc">
+                <button type="submit" class="btn small primary" id="gGuardar"><i class="fa-solid fa-floppy-disk"></i> Guardar gasto</button>
+                <button type="button" class="btn small ghost" id="gCancelar"><i class="fa-solid fa-xmark"></i> Cancelar</button>
+              </div>
+            </form>
+            <div class="sol-list" id="gastosList"></div>
+            <div class="empty-adm hidden" id="gastosEmpty">No hay gastos registrados en este mes.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CORREOS MASIVOS -->
+      <section class="view-sec hidden" id="correosView">
+        <div class="adm-top">
+          <div>
+            <h1>Correos y clientes</h1>
+            <p class="sub">Envía novedades, promociones o recordatorios a tus clientes por correo</p>
+          </div>
+        </div>
+
+        <div class="correo-config">
+          <i class="fa-solid fa-circle-info"></i>
+          <div><b>Aviso:</b> los envíos se realizan con <b>EmailJS</b> desde tu navegador. Configura tu <code>public key</code>, <code>service</code> y <code>template</code> en <code>js/config.js</code>. El plan gratuito permite ~200 correos/mes. En EmailJS crea una plantilla con las variables <code>to_email</code>, <code>to_name</code>, <code>subject</code> y <code>message</code>.</div>
+        </div>
+
+        <div class="correo-grid">
+          <div class="correo-card">
+            <h3><i class="fa-solid fa-users"></i> Clientes (correo)</h3>
+            <label class="chk" style="margin-bottom:.8rem;display:flex;align-items:center;gap:.5rem;background:var(--crema);border-radius:12px;padding:.6rem .9rem;">
+              <input type="checkbox" id="clienteSeleccionarTodos"> <b>Seleccionar todos</b>
+            </label>
+            <div class="cliente-select-info" id="clienteSelInfo">0 clientes seleccionados</div>
+            <div class="sol-list" id="clientesList"></div>
+            <div class="empty-adm hidden" id="clientesEmpty">Aún no hay clientes con correo. Los pedidos y encargos de la tienda que incluyan correo aparecerán aquí (un registro por correo).</div>
+          </div>
+
+          <div class="correo-card redactor">
+            <h3><i class="fa-solid fa-envelope-open-text"></i> Redactar y enviar</h3>
+            <label>Asunto<input type="text" id="emailAsunto" placeholder="Ej: Novedades de Bendito Sabor"></label>
+            <label>Mensaje
+              <textarea id="emailCuerpo" placeholder="Hola {{nombre}}, tenemos novedades…"></textarea>
+            </label>
+            <p class="cursor"><i class="fa-solid fa-wand-magic-sparkles"></i> Usa <code>{{nombre}}</code> para saludar a cada cliente por su nombre.</p>
+            <button class="btn primary block enviar" id="btnEnviarCorreo"><i class="fa-solid fa-paper-plane"></i> Enviar a los seleccionados</button>
+
+            <div class="correo-hist">
+              <h3 style="margin:.9rem 0 .6rem;"><i class="fa-solid fa-clock-rotate-left"></i> Envíos anteriores</h3>
+              <div id="enviosList"></div>
+              <div class="empty-adm hidden" id="enviosEmpty">Todavía no has enviado correos masivos.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PUBLICIDAD -->
+      <section class="view-sec hidden" id="bannersView">
+        <div class="adm-top">
+          <div>
+            <h1>Publicidad</h1>
+            <p class="sub">Banners que se muestran en el carrusel superior de la tienda</p>
+          </div>
+          <button class="btn primary" id="btnNuevoBanner"><i class="fa-solid fa-plus"></i> Nuevo banner</button>
+        </div>
+
+        <div class="stats" id="bannerStats"></div>
+
+        <div class="sol-list" id="bannerList"></div>
+        <div class="empty-adm hidden" id="bannerEmpty">No hay banners. Crea el primero para publicitar tu tienda.</div>
+
+        <p class="hint"><i class="fa-solid fa-circle-info"></i> Los banners activos se muestran en la parte superior de la tienda en orden. El enlace es opcional: si lo pones, el botón "Ver más" llevará a esa URL (WhatsApp, catálogo, redes…).</p>
+      </section>
+
+      <!-- CLIENTES FELICES -->
+      <section class="view-sec hidden" id="galeriaView">
+        <div class="adm-top">
+          <div>
+            <h1>Clientes felices</h1>
+            <p class="sub">Fotos que se muestran en el carrusel de la sección "Encargos" de la tienda</p>
+          </div>
+          <button class="btn primary" id="btnNuevaGaleria"><i class="fa-solid fa-plus"></i> Nueva foto</button>
+        </div>
+
+        <div class="stats" id="galeriaStats"></div>
+
+        <div class="galeria-grid" id="galeriaList"></div>
+        <div class="empty-adm hidden" id="galeriaEmpty">Aún no hay fotos. Sube la primera para mostrarla en la tienda.</div>
+
+        <p class="hint"><i class="fa-solid fa-circle-info"></i> Solo se muestran en la tienda las fotos <b>activas</b>, ordenadas por el campo <b>Orden</b> (de menor a mayor). Usa los botones de posición para cambiarlo rápido sin abrir el formulario.</p>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- ============ FORMULARIO MODAL ============ -->
+<div class="modal" id="formModal">
+  <div class="mod-backdrop" onclick="cerrarForm()"></div>
+  <div class="mod-card">
+    <div class="mod-head">
+      <h2 id="modTitle">Nuevo producto</h2>
+      <button class="x" onclick="cerrarForm()" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <form id="productForm" novalidate>
+      <div class="grid2">
+        <label>Nombre *<input type="text" id="fNombre" required placeholder="Ej: Torta de chocolate 3 pisos"></label>
+        <label>Categoría *
+          <select id="fCategoria">
+            <option value="tortas">Tortas</option>
+            <option value="postres">Postres</option>
+            <option value="cupcakes">Cupcakes</option>
+            <option value="panaderia">Panadería</option>
+            <option value="dulces">Dulces</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="grid2">
+        <label>Stock (cantidad disponible)<input type="number" id="fStock" min="0" step="1" placeholder="Ej: 5"></label>
+        <label>Precio (COP)<input type="number" id="fPrecio" min="0" step="100" placeholder="Vacío = Consultar"></label>
+      </div>
+
+      <div class="grid2">
+        <label>Costo (COP)<input type="number" id="fCosto" min="0" step="100" placeholder="Vacío = 0"></label>
+      </div>
+      <p class="hint"><i class="fa-solid fa-circle-info"></i> El <b>costo</b> es lo que te cuesta producir el producto (ingredientes, empaque…). Se usa en <b>Contabilidad</b> para calcular la utilidad de cada venta.</p>
+
+      <label>Información del encargo<input type="text" id="fGarantia" placeholder="Ej: Se personaliza según tu gusto · encarga con anticipación"></label>
+
+      <label>Descripción<textarea id="fDescripcion" rows="3" placeholder="Describe el producto, presentaciones, sabores…"></textarea></label>
+
+      <div class="grid2">
+        <label>Etiqueta o badge<input type="text" id="fEtiqueta" placeholder="Nuevo, Más vendido… (opcional)"></label>
+      </div>
+
+      <div class="foto-zone">
+        <div class="foto-drop" id="fotoDrop">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span>Arrastra una foto o haz clic para subirla</span>
+          <small>JPG o PNG · Se subirá a Supabase Storage</small>
+        </div>
+        <input type="file" id="fFoto" accept="image/*" hidden>
+        <div class="foto-preview hidden" id="fotoPreviewWrap">
+          <img id="fotoPreview" alt="Vista previa">
+          <button type="button" class="small danger" id="btnQuitarFoto"><i class="fa-solid fa-trash-can"></i> Quitar foto</button>
+        </div>
+      </div>
+
+      <fieldset class="promo">
+        <legend><i class="fa-solid fa-tags"></i> Promoción</legend>
+        <div class="grid2">
+          <label>Descuento %<input type="number" id="fDescuento" min="0" max="100" step="1" placeholder="Ej: 20"></label>
+          <label>Etiqueta de la promo<input type="text" id="fEtiquetaPromo" placeholder="Oferta, 2x1…"></label>
+        </div>
+        <div class="grid2">
+          <label>Inicio<input type="date" id="fInicio"></label>
+          <label>Fin<input type="date" id="fFin"></label>
+        </div>
+        <p class="hint">La promo se aplica automáticamente entre esas fechas (se incluye el día de inicio y el de fin).</p>
+      </fieldset>
+
+      <label class="chk"><input type="checkbox" id="fActivo" checked> Producto activo (visible en la tienda)</label>
+
+      <span class="msg" id="formMsg"></span>
+
+      <div class="mod-foot">
+        <button type="button" class="btn ghost" onclick="cerrarForm()">Cancelar</button>
+        <button type="submit" class="btn primary" id="btnGuardar"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ FORMULARIO MODAL BANNER ============ -->
+<div class="modal" id="bannerFormModal">
+  <div class="mod-backdrop" onclick="cerrarBannerForm()"></div>
+  <div class="mod-card">
+    <div class="mod-head">
+      <h2 id="bannerModTitle">Nuevo banner</h2>
+      <button class="x" onclick="cerrarBannerForm()" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <form id="bannerForm" novalidate>
+      <div class="grid2">
+        <label>Título<input type="text" id="bfTitulo" placeholder="Ej: ¡Fines de semana dulces!"></label>
+        <label>Subtítulo<input type="text" id="bfSubtitulo" placeholder="Ej: El 20% de descuento en tortas"></label>
+      </div>
+      <div class="grid2">
+        <label>Enlace (opcional)<input type="text" id="bfEnlace" placeholder="https://wa.me/… o #catalogo"></label>
+        <label>Orden<input type="number" id="bfOrden" min="0" step="1" value="0" placeholder="0"></label>
+      </div>
+
+      <div class="foto-zone">
+        <div class="foto-drop" id="bfotoDrop">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span>Imagen del banner (ideal 1200×400)</span>
+          <small>JPG o PNG · Se subirá a Supabase Storage</small>
+        </div>
+        <input type="file" id="bfFoto" accept="image/*" hidden>
+        <div class="foto-preview hidden" id="bfotoPreviewWrap">
+          <img id="bfotoPreview" alt="Vista previa">
+          <button type="button" class="small danger" id="btnQuitarBannerFoto"><i class="fa-solid fa-trash-can"></i> Quitar imagen</button>
+        </div>
+      </div>
+
+      <label class="chk"><input type="checkbox" id="bfActivo" checked> Banner activo (visible en la tienda)</label>
+
+      <span class="msg" id="bannerFormMsg"></span>
+
+      <div class="mod-foot">
+        <button type="button" class="btn ghost" onclick="cerrarBannerForm()">Cancelar</button>
+        <button type="submit" class="btn primary" id="btnGuardarBanner"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ FORMULARIO MODAL GALERÍA ============ -->
+<div class="modal" id="galeriaFormModal">
+  <div class="mod-backdrop" onclick="cerrarGaleriaForm()"></div>
+  <div class="mod-card">
+    <div class="mod-head">
+      <h2 id="galeriaModTitle">Nueva foto</h2>
+      <button class="x" onclick="cerrarGaleriaForm()" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <form id="galeriaForm" novalidate>
+      <div class="grid2">
+        <label>Título<input type="text" id="gfTitulo" maxlength="80" placeholder="Ej: Torta de tres pisos para una familia"></label>
+        <label>Orden<input type="number" id="gfOrden" min="0" step="1" value="0" placeholder="0"></label>
+      </div>
+
+      <label>Texto del testimonial (opcional)
+        <textarea id="gfTexto" rows="2" maxlength="240" placeholder="Ej: ¡Nos encantó el sabor y el diseño!"></textarea>
+      </label>
+
+      <div class="foto-zone">
+        <div class="foto-drop" id="gfDrop">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span>Foto del cliente (vertical o cuadrada, ideal 1080×1350)</span>
+          <small>JPG, PNG o WebP · máx. 5 MB · bucket público "galeria"</small>
+        </div>
+        <input type="file" id="gfFoto" accept="image/*" hidden>
+        <div class="foto-preview hidden" id="gfPreviewWrap">
+          <img id="gfPreview" alt="Vista previa">
+          <button type="button" class="small danger" id="btnQuitarGaleriaFoto"><i class="fa-solid fa-trash-can"></i> Quitar foto</button>
+        </div>
+      </div>
+
+      <label class="chk"><input type="checkbox" id="gfActivo" checked> Visible en la tienda</label>
+
+      <span class="msg" id="galeriaFormMsg"></span>
+
+      <div class="mod-foot">
+        <button type="button" class="btn ghost" onclick="cerrarGaleriaForm()">Cancelar</button>
+        <button type="submit" class="btn primary" id="btnGuardarGaleria"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ LIGHTBOX COMPROBANTE ============ -->
+<div class="modal lightbox" id="compModal">
+  <div class="mod-backdrop" onclick="cerrarComprobante()"></div>
+  <div class="lightbox-card">
+    <button class="x" onclick="cerrarComprobante()" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+    <figure>
+      <img id="compImg" alt="Comprobante de pago">
+      <figcaption id="compCaption"></figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script src="js/config.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

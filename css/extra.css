@@ -1,0 +1,195 @@
+/* =============================================================== */
+/* BENDITO SABOR · Estilos complementarios (Pastelería)            */
+/* Fotos reales, promociones, stock y acceso administrador         */
+/* =============================================================== */
+
+/* ---------- Fotos reales en tarjetas ---------- */
+.product-card .art{padding:0;}
+.product-card .art img,
+.product-card .art .art-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s;}
+.product-card:hover .art img,
+.product-card:hover .art .art-img{transform:none;}
+.art-placeholder{display:grid;place-items:center;font-size:2.8rem;color:#fff;opacity:.85;text-shadow:0 6px 18px rgba(102,31,29,.35);}
+.art .tag.promo{background:linear-gradient(135deg,var(--naranja),var(--naranja-oscuro));color:#fff;box-shadow:0 4px 12px rgba(240,103,54,.4);}
+
+/* ---------- Precio con descuento ---------- */
+.price-pill{white-space:nowrap;display:inline-flex;align-items:baseline;gap:.3rem;}
+.price-pill.promo{background:linear-gradient(135deg,var(--naranja),var(--naranja-oscuro));}
+.p-old{text-decoration:line-through;opacity:.75;font-size:80%;font-weight:500;margin-right:.1rem;}
+.price-pill .p-old{font-weight:600;}
+.pm-price .p-old{font-size:.95rem;color:var(--texto-claro);margin-right:.45rem;}
+
+/* ---------- Modal: cabecera con foto ---------- */
+.product-modal-head img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.product-modal-head .pm-placeholder{font-size:3.4rem;color:#fff;opacity:.85;}
+
+/* ---------- Drawer: miniatura con foto ---------- */
+.cart-item .thumb{overflow:hidden;}
+.cart-item .thumb img{width:100%;height:100%;object-fit:cover;}
+.cart-item .thumb i{font-size:1.35rem;color:#fff;opacity:.85;}
+
+/* ---------- Animación al agregar ---------- */
+.product-card.adding{animation:addpop .45s;}
+@keyframes addpop{20%{transform:scale(1.03)}50%{transform:scale(.99)}80%{transform:scale(1.01)}100%{transform:scale(1)}}
+
+/* ---------- Acceso administrador (footer) ---------- */
+.admin-link{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:10px;background:rgba(255,255,255,.1);color:#EBCFB0;font-size:.78rem;transition:var(--trans);border:1px solid rgba(255,255,255,.14);}
+.admin-link:hover{background:var(--naranja);color:#fff;transform:translateY(-2px);}
+
+/* ---------- Código de seguimiento en pantalla de éxito ---------- */
+.order-code{margin:0 auto 1.2rem;max-width:330px;background:linear-gradient(135deg,#FFF6E3,#EFFBF3);border:1.5px dashed #D9B45C;border-radius:16px;padding:.9rem 1rem;display:flex;flex-direction:column;gap:.15rem;align-items:center;text-align:center;}
+.order-code small{font-size:.7rem;color:var(--texto-claro);text-transform:uppercase;letter-spacing:.08em;font-weight:600;}
+.order-code b{font-size:1.45rem;letter-spacing:.06em;color:#0f9d4f;font-variant-numeric:tabular-nums;}
+.order-code span{font-size:.75rem;color:var(--texto-claro);}
+.order-code a{color:#0f9d4f;font-weight:600;text-decoration:underline;}
+
+/* ---------- Sección: consulta tu compra ---------- */
+.consulta{padding:4.5rem 0;position:relative;}
+.consulta::before{content:'';position:absolute;inset:0;background:radial-gradient(600px 220px at 50% 0%,rgba(251,162,83,.12),transparent 70%);pointer-events:none;}
+.consulta-box{display:flex;gap:.7rem;max-width:560px;margin:0 auto;}
+.consulta-box .search{flex:1;min-width:0;max-width:none;}
+.consulta-box .btn{white-space:nowrap;}
+#consResult{max-width:640px;margin:1.4rem auto 0;}
+.cons-loading,.cons-empty{display:flex;align-items:center;justify-content:center;gap:.6rem;padding:1.6rem;background:#fff;border-radius:16px;box-shadow:var(--sombra-card);color:var(--texto-claro);font-size:.92rem;border:1.5px dashed var(--borde);}
+.cons-empty{flex-direction:column;text-align:center;padding:2rem;}
+.cons-empty i{font-size:1.8rem;color:var(--naranja-oscuro);}
+.cons-card{background:#fff;border-radius:18px;box-shadow:var(--sombra-card);padding:1.2rem 1.35rem;display:flex;flex-direction:column;gap:1rem;text-align:left;animation:addpop .35s;}
+.cons-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.cons-head small{font-size:.68rem;color:var(--texto-claro);text-transform:uppercase;letter-spacing:.08em;font-weight:600;display:block;}
+.cons-head b{font-size:1.25rem;color:var(--texto);letter-spacing:.04em;font-variant-numeric:tabular-nums;}
+.cons-pill{display:inline-flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:700;border-radius:999px;padding:.42rem .8rem;border:1.5px solid;background:#FFF3E8;border-color:var(--naranja);color:var(--naranja-oscuro);}
+.cons-pill.garantia{border-color:#E0A236;color:#9A6B10;background:#FFF6E3;}
+.cons-pill.atendida{border-color:#25d366;color:#0f9d4f;background:#EFFBF3;}
+.cons-pill.cerrada{border-color:#D8B298;color:var(--texto-claro);background:var(--crema);}
+.cons-meta{display:flex;flex-wrap:wrap;gap:.55rem 1.2rem;font-size:.78rem;color:var(--texto-claro);}
+.cons-meta span{display:inline-flex;align-items:center;gap:.4rem;}
+.cons-items{background:var(--crema);border-radius:14px;padding:.9rem 1rem;display:flex;flex-direction:column;gap:.55rem;}
+.cons-items h4{font-size:.82rem;margin:0;color:var(--texto);display:flex;align-items:center;gap:.45rem;}
+.cons-items .rl{display:flex;justify-content:space-between;gap:1rem;font-size:.84rem;color:#5F3A22;}
+.cons-items .rl em{font-style:normal;color:var(--texto-claro);font-size:.78rem;}
+.cons-items .rl.total{border-top:1px solid var(--borde);padding-top:.55rem;font-weight:700;color:var(--texto);}
+
+/* ---------- Sección: métodos de pago ---------- */
+.pagos{padding:4.5rem 0 5.5rem;background:linear-gradient(180deg,var(--crema),#FAF4EA);}
+.pagos-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1rem;max-width:920px;margin:0 auto;}
+.pago-card{background:#fff;border-radius:18px;box-shadow:var(--sombra-card);padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.8rem;transition:var(--trans);}
+.pago-card:hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(102,31,29,.14);}
+.pago-ico{display:flex;align-items:center;gap:.6rem;font-size:1.05rem;color:var(--naranja-oscuro);padding-bottom:.6rem;border-bottom:1px solid var(--borde);}
+.pago-ico i{font-size:1.3rem;}
+.pago-ico b{color:var(--texto);}
+.pago-row{display:flex;justify-content:space-between;gap:1rem;font-size:.84rem;}
+.pago-row small{color:var(--texto-claro);font-weight:500;}
+.pago-row span{color:#5F3A22;font-weight:600;text-align:right;}
+.pago-note{max-width:920px;margin:1.2rem auto 0;display:flex;gap:.5rem;align-items:flex-start;font-size:.8rem;color:var(--texto-claro);}
+.pago-note i{color:var(--naranja-oscuro);margin-top:.1rem;}
+
+@media(max-width:600px){
+  .consulta-box{flex-direction:column;}
+  .consulta-box .btn{width:100%;justify-content:center;}
+  .cons-head{flex-direction:column;align-items:flex-start;}
+  .cons-card{padding:1rem 1.05rem;}
+}
+
+/* ======== TORTA PERSONALIZADA (sección + wizard 4 pasos) ======== */
+.custom-cake{padding:60px 0 64px;background:
+  radial-gradient(circle at 12% 18%,rgba(255,255,255,.35),transparent 42%),
+  linear-gradient(135deg,var(--durazno) 0%,var(--durazno-claro) 45%,#fde3c9 100%);}
+.cake-banner{display:flex;align-items:center;gap:2.6rem;background:#fff;border-radius:26px;padding:clamp(1.6rem,4vw,2.4rem) clamp(1.2rem,4vw,3.2rem);box-shadow:var(--sombra-card);border:1px solid var(--borde);}
+.cake-copy{flex:1.15;}
+.cake-eyebrow{display:inline-flex;align-items:center;gap:.5rem;font-size:.78rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--rosa);background:#fdeefc;padding:.35rem .8rem;border-radius:999px;margin-bottom:.9rem;}
+.cake-copy h2{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3.4vw,2.45rem);color:var(--vinotinto);line-height:1.1;margin-bottom:.7rem;}
+.cake-copy>p{color:var(--texto-claro);font-size:.95rem;max-width:520px;margin-bottom:1.2rem;}
+.cake-feats{list-style:none;padding:0;margin:0 0 1.5rem;display:flex;flex-direction:column;gap:.5rem;}
+.cake-feats li{display:flex;align-items:center;gap:.6rem;font-size:.9rem;font-weight:600;color:#5F3A22;text-align:left;}
+.cake-feats i{color:var(--naranja-oscuro);}
+.cake-art{flex:.85;display:flex;flex-direction:column;align-items:center;gap:1.2rem;}
+.cake-art-ico{width:min(230px,50vw);aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:5.4rem;color:#fff;border-radius:50%;background:
+  radial-gradient(circle at 35% 30%,rgba(255,255,255,.35),transparent 45%),
+  linear-gradient(135deg,var(--rosa) 0%,var(--vinotinto) 100%);box-shadow:0 18px 45px rgba(203,115,191,.4);}
+.cake-art-note{display:inline-flex;align-items:center;gap:.45rem;font-size:.78rem;font-weight:600;color:#7A4A26;background:#fff;border:1px dashed var(--borde);border-radius:999px;padding:.45rem .9rem;text-align:center;}
+.cake-art-note i{color:var(--naranja-oscuro);}
+
+/* ---- Wizard ---- */
+.cake-head{background:linear-gradient(120deg,var(--vinotinto) 0%,#8a2b28 100%);color:#fff;border-radius:20px 20px 0 0;padding:1.2rem 1.4rem;}
+.cake-head h3{margin:0;font-size:1.15rem;display:flex;align-items:center;gap:.55rem;}
+.cake-steps{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem;}
+.cstep{font-size:.72rem;font-weight:600;padding:.3rem .7rem;border-radius:999px;background:rgba(255,255,255,.14);color:rgba(255,255,255,.75);}
+.cstep.active{background:var(--naranja);color:#fff;}
+.cake-progress{height:5px;background:rgba(255,255,255,.22);border-radius:99px;margin-top:1rem;overflow:hidden;}
+.cake-progress span{display:block;height:100%;width:25%;background:linear-gradient(90deg,var(--naranja),var(--rosa));border-radius:99px;transition:width .35s ease;}
+.cake-body{padding:1.4rem 1.4rem .4rem;}
+.cake-panel{display:none;animation:cakeIn .3s ease;}
+.cake-panel.active{display:block;}
+@keyframes cakeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+.cake-panel h4{margin:0 0 .2rem;font-size:1.05rem;color:var(--vinotinto);}
+.cake-sub{margin:0 0 1rem;font-size:.84rem;color:var(--texto-claro);}
+.cake-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.75rem;margin-bottom:.6rem;}
+.cake-opt{border:2px solid var(--borde);background:var(--crema-input);border-radius:16px;padding:1rem .6rem;display:flex;flex-direction:column;align-items:center;gap:.2rem;cursor:pointer;transition:var(--trans);font-family:inherit;color:#5F3A22;}
+.cake-opt b{font-size:1.05rem;color:var(--vinotinto);line-height:1;}
+.cake-opt span{font-size:.74rem;font-weight:600;}
+.cake-opt:hover{border-color:var(--naranja);}
+.cake-opt.sel{border-color:var(--naranja-oscuro);background:#fff4e8;box-shadow:0 0 0 3px rgba(251,162,83,.18);}
+.cake-sabores{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}
+.cake-sabores .cake-opt{padding:1rem .8rem;}
+.cake-tip{display:flex;gap:.5rem;align-items:flex-start;font-size:.78rem;color:var(--texto-claro);background:var(--crema);border-radius:12px;padding:.7rem .9rem;margin-top:1rem;}
+.cake-tip i{color:var(--naranja-oscuro);margin-top:.1rem;}
+.cake-foot{display:flex;gap:.6rem;justify-content:flex-end;align-items:center;padding:1rem 1.4rem 1.3rem;}
+.cake-success{display:none;flex-direction:column;align-items:center;text-align:center;padding:1.6rem 1.4rem 1.6rem;}
+.cake-success .big-ico{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,var(--rosa),var(--vinotinto));color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.9rem;margin-bottom:1rem;box-shadow:0 14px 30px rgba(203,115,191,.4);}
+.cake-success h3{margin:0 0 .4rem;color:var(--vinotinto);font-size:1.3rem;}
+.cake-success .order-code{margin:.4rem 0 1.2rem;}
+.cake-success .order-code small{display:block;font-size:.74rem;color:var(--texto-claro);font-weight:600;margin-bottom:.3rem;}
+.cake-success .order-code b{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--vinotinto);}
+.cake-success .order-code span{display:block;font-size:.76rem;color:var(--texto-claro);margin-top:.3rem;max-width:400px;}
+.cake-success .order-code a{color:var(--rosa);font-weight:700;}
+.cake-success .btn-gold{width:100%;justify-content:center;}
+
+@media(max-width:760px){
+  .cake-banner{flex-direction:column-reverse;gap:1.6rem;text-align:center;padding:2rem 1.3rem;}
+  .cake-feats{align-items:center;}
+  .cake-copy>p{margin-left:auto;margin-right:auto;}
+  .cake-art-ico{width:min(180px,46vw);font-size:4.2rem;}
+  .cake-steps{gap:.35rem;}
+}
+@media(max-width:600px){
+  .cake-grid{grid-template-columns:repeat(2,1fr);}
+  .cake-sabores{grid-template-columns:repeat(2,1fr);}
+  .cake-foot{flex-wrap:wrap;}
+  .cake-foot .btn{flex:1;justify-content:center;}
+}
+
+/* =============================================================== */
+/* CLIENTES FELICES · carrusel de fotos                            */
+/* =============================================================== */
+.galeria{margin-top:1.6rem;background:#fff;border-radius:24px;padding:clamp(1.3rem,3.4vw,2rem);box-shadow:var(--sombra-card);border:1px solid var(--borde);}
+.galeria-head{display:flex;align-items:flex-end;justify-content:space-between;gap:1.2rem;flex-wrap:wrap;margin-bottom:1.1rem;}
+.galeria-kicker{display:inline-flex;align-items:center;gap:.45rem;font-size:.74rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--rosa);background:#fdeefc;padding:.34rem .8rem;border-radius:999px;}
+.galeria-head h3{font-size:clamp(1.35rem,3vw,1.9rem);margin:.55rem 0 .15rem;}
+.galeria-head p{color:var(--texto-claro);font-size:.9rem;}
+.galeria-acc{display:flex;gap:.5rem;}
+.gal-arrow{width:42px;height:42px;border-radius:50%;background:var(--crema);border:1.5px solid var(--borde);color:var(--vinotinto);display:grid;place-items:center;transition:var(--trans);}
+.gal-arrow:hover:not(:disabled){background:var(--naranja);border-color:var(--naranja);color:#fff;transform:translateY(-2px);}
+.gal-arrow:disabled{opacity:.35;cursor:not-allowed;}
+.galeria-slider{overflow:hidden;border-radius:18px;outline:none;touch-action:pan-y;}
+.galeria-slider:focus-visible{box-shadow:0 0 0 3px rgba(251,162,83,.5);}
+.galeria-track{display:flex;transition:transform .55s cubic-bezier(.4,.05,.2,1);}
+.gal-slide{flex:0 0 100%;margin:0;position:relative;background:var(--crema);}
+.gal-slide img{width:100%;height:clamp(280px,46vw,430px);object-fit:cover;display:block;}
+.gal-slide figcaption{position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;gap:.15rem;padding:1.6rem 1.2rem 1rem;background:linear-gradient(0deg,rgba(60,20,10,.82),rgba(60,20,10,0));color:#fff;}
+.gal-slide figcaption b{font-family:'Playfair Display',serif;font-size:1.05rem;color:#fff;}
+.gal-slide figcaption span{font-size:.82rem;opacity:.92;}
+.galeria-dots{display:flex;justify-content:center;gap:.45rem;margin-top:.9rem;flex-wrap:wrap;}
+.galeria-dots:empty{display:none;}
+.gal-dot{width:9px;height:9px;border-radius:50%;background:var(--durazno-claro2);border:1px solid var(--borde);transition:var(--trans);padding:0;}
+.gal-dot:hover{background:var(--durazno);}
+.gal-dot.active{width:24px;border-radius:99px;background:var(--naranja-oscuro);border-color:var(--naranja-oscuro);}
+.galeria-empty{margin-top:.6rem;text-align:center;color:var(--texto-claro);font-size:.9rem;background:var(--crema);border:1.5px dashed var(--borde);border-radius:16px;padding:1.5rem 1rem;}
+.galeria.sin-fotos .galeria-slider,.galeria.sin-fotos .galeria-dots,.galeria.sin-fotos .galeria-acc{display:none;}
+
+@media(max-width:600px){
+  .galeria{padding:1.1rem;border-radius:20px;}
+  .galeria-head{align-items:flex-start;}
+  .gal-arrow{width:38px;height:38px;}
+  .gal-slide img{height:64vw;}
+  .gal-slide figcaption{padding:1.4rem .9rem .8rem;}
+}
