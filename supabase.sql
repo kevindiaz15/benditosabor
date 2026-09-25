@@ -957,16 +957,31 @@ create trigger trg_storage_limitar_anon
 
 -- ---------------------------------------------------------------
 -- 15) BOOTSTRAP DEL ADMINISTRADOR
---     Si la tabla está vacía, el usuario más antiguo de Authentication
---     queda como admin. Si ya tienes usuarios y quieres otro correo,
---     ejecuta tú mismo:
---       insert into public.admins (email) values ('TU-CORREO@GMAIL.COM')
+--     Registra como admin al usuario más antiguo de Authentication
+--     cuando la lista está vacía O contiene correos que ya no existen
+--     (típico: correste el script antes de crear tu usuario). Es
+--     idempotente, así que puedes reejecutar el script para repararlo.
+--
+--     Para dar permisos a un correo concreto:
+--       insert into public.admins (email) values ('TU@CORREO.COM')
+--       on conflict (email) do nothing;
+--
+--     Para dar permisos a TODOS los usuarios existentes (con cuidado):
+--       insert into public.admins (email)
+--       select lower(email) from auth.users where email is not null
 --       on conflict (email) do nothing;
 -- ---------------------------------------------------------------
 do $$
 declare v_email text;
+declare n integer := 0;
 begin
-  if not exists (select 1 from public.admins) then
+  select count(*) into n
+  from public.admins a
+  where exists (
+    select 1 from auth.users u where lower(u.email) = lower(a.email)
+  );
+
+  if n = 0 then
     select lower(email) into v_email
     from auth.users
     where email is not null
@@ -977,7 +992,7 @@ begin
       insert into public.admins (email) values (v_email) on conflict (email) do nothing;
       raise notice 'BENDITO SABOR: administrador bootstrap -> %', v_email;
     else
-      raise warning 'BENDITO SABOR: no hay usuarios todavía. Crea tu usuario en Authentication → Users y vuelve a ejecutar este script.';
+      raise warning 'BENDITO SABOR: no hay usuarios en Authentication. Crea tu usuario y vuelve a ejecutar este script.';
     end if;
   end if;
 end $$;

@@ -149,6 +149,15 @@ async function esAdmin(){
   }catch(e){ return false; }
 }
 
+function avisoSinPermisos(correo){
+  const quien = correo || 'este correo';
+  const msg = 'Sesión iniciada, pero ' + quien + ' no está en la lista de administradores. '
+    + 'En Supabase → SQL Editor ejecuta: insert into public.admins (email) values ('
+    + (correo || "'TU@CORREO.COM'") + ');';
+  if($('loginMsg')) $('loginMsg').textContent = msg;
+  toast('Acceso denegado: correo sin permisos','error');
+}
+
 let accesoPermitido = false;
 async function entrarAlPanel(){
   if(accesoPermitido) return;
@@ -158,7 +167,12 @@ async function entrarAlPanel(){
   }else{
     accesoPermitido = false;
     mostrarLogin();
-    $('loginMsg').textContent = 'Tu usuario no tiene permisos de administrador.';
+    let correo = '';
+    try{
+      const { data } = await sb.auth.getUser();
+      correo = (data && data.user && data.user.email) || '';
+    }catch(e){}
+    avisoSinPermisos(correo);
     try{ await sb.auth.signOut(); }catch(e){}
   }
 }
@@ -1445,8 +1459,7 @@ document.getElementById('loginForm').addEventListener('submit', async e=>{
   /* La sesión puede ser válida y aun así no ser admin: lo decide la RLS */
   accesoPermitido = await esAdmin();
   if(!accesoPermitido){
-    $('loginMsg').textContent = 'Tu usuario no tiene permisos de administrador.';
-    toast('Acceso denegado','error');
+    avisoSinPermisos(email);
     try{ await sb.auth.signOut(); }catch(x){}
   }else{
     toast('¡Bienvenido! Sesión iniciada');
