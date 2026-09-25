@@ -56,6 +56,52 @@ create policy "admins_lectura"
   using (public.es_admin());
 
 -- ---------------------------------------------------------------
+-- 1.5) AYUDANTES DE VALIDACIÓN
+--     Sin expresiones regulares a propósito: un patrón mal formado
+--     aborta TODOS los pedidos con el error 2201B
+--     ("invalid regular expression: invalid repetition count(s)").
+--     Se definen aquí porque los usan functions de secciones posteriores.
+-- ---------------------------------------------------------------
+-- es_entero('12000', 12) -> true      es_entero('12a', 12) -> false
+create or replace function public.es_entero(p_txt text, p_max integer default 12)
+returns boolean
+language sql
+immutable
+as $$
+  select coalesce(p_txt, '') <> ''
+     and translate(p_txt, '0123456789', '') = ''
+     and length(p_txt) between 1 and greatest(1, coalesce(p_max, 12));
+$$;
+
+-- es_uuid('3f0d9a6e-1c2b-4d5e-8f90-a1b2c3d4e5f6') -> true
+create or replace function public.es_uuid(p_txt text)
+returns boolean
+language sql
+immutable
+as $$
+  select length(p_txt) = 36
+     and translate(p_txt, '0123456789abcdefABCDEF-', '') = ''
+     and length(translate(p_txt, '-', '')) = 32
+     and substr(p_txt,  9, 1) = '-'
+     and substr(p_txt, 14, 1) = '-'
+     and substr(p_txt, 19, 1) = '-'
+     and substr(p_txt, 24, 1) = '-';
+$$;
+
+-- solo_digitos('+57 (300) 123-4567') -> '573001234567'
+create or replace function public.solo_digitos(p_txt text)
+returns text
+language sql
+immutable
+as $$
+  select coalesce((
+    select string_agg(c, '')
+      from unnest(string_to_array(coalesce(p_txt, ''), '')) as c
+     where c in ('0','1','2','3','4','5','6','7','8','9')
+  ), '');
+$$;
+
+-- ---------------------------------------------------------------
 -- 2) PRODUCTOS (catálogo de la pastelería)
 -- ---------------------------------------------------------------
 create table if not exists public.productos (
@@ -384,68 +430,24 @@ create policy "gastos_admin_delete"
   using (public.es_admin());
 
 -- ---------------------------------------------------------------
--- 7) CORREO MASIVO · HISTORIAL DE ENVÍOS
+-- 7) CORREO MASIVO (retirado)
+--    La funcionalidad se eliminó del panel. Estas sentencias borran
+--    lo que quedara de versiones anteriores, para que reejecutar
+--    este script también limpie la base de datos.
+--    Van dentro de un bloque con manejador de error: si algo falla,
+--    el script CONTINÚA y las secciones siguientes (que son las
+--    importantes) sí se ejecutan.
 -- ---------------------------------------------------------------
-create table if not exists public.envios (
-  id uuid primary key default gen_random_uuid(),
-  asunto text not null,
-  cuerpo text default '',
-  destinatarios integer not null default 0,
-  enviado_ok integer not null default 0,
-  enviado_error integer not null default 0,
-  created_at timestamptz default now()
-);
-
-alter table public.envios enable row level security;
-
-drop policy if exists "envios_admin_select" on public.envios;
-create policy "envios_admin_select"
-  on public.envios for select
-  using (public.es_admin());
-
-drop policy if exists "envios_admin_insert" on public.envios;
-create policy "envios_admin_insert"
-  on public.envios for insert
-  with check (public.es_admin());
-
-drop policy if exists "envios_admin_update" on public.envios;
-create policy "envios_admin_update"
-  on public.envios for update
-  using (public.es_admin())
-  with check (public.es_admin());
-
-drop policy if exists "envios_admin_delete" on public.envios;
-create policy "envios_admin_delete"
-  on public.envios for delete
-  using (public.es_admin());
+do $$
+begin
+  drop view if exists public.clientes;
+  drop table if exists public.envios;
+exception when others then
+  raise notice 'BENDITO SABOR: no se pudo limpiar clientes/envios: %', sqlerrm;
+end $$;
 
 -- ---------------------------------------------------------------
--- 8) VISTA CLIENTES (respeta RLS gracias a security_invoker)
--- ---------------------------------------------------------------
-drop view if exists public.clientes;
-create view public.clientes
-with (security_invoker = true)
-as
-with lim as (
-  select lower(nullif(trim(correo), '')) as correo,
-         nombre,
-         whatsapp,
-         created_at
-  from public.solicitudes
-  where lower(nullif(trim(correo), '')) is not null
-    and trim(correo) <> ''
-)
-select correo,
-       max(nombre) as nombre,
-       max(whatsapp) as whatsapp,
-       max(created_at) as ultimo_pedido,
-       count(*) as pedidos
-from lim
-group by correo
-order by ultimo_pedido desc;
-
--- ---------------------------------------------------------------
--- 9) CERRAR VENTA (descuenta stock UNA vez y guarda el costo)
+-- 8) CERRAR VENTA (descuenta stock UNA vez y guarda el costo)
 -- ---------------------------------------------------------------
 create or replace function public.cerrar_venta(p_id uuid)
 returns boolean
@@ -481,12 +483,12 @@ begin
     select value from jsonb_array_elements(coalesce(s.detalles -> 'items', '[]'::jsonb))
   loop
     v_cant := case
-      when coalesce(it ->> 'cantidad', '') ~ '^[0-9]{1,4}$'
+      when public.es_entero(it ->> 'cantidad', 4)
         then greatest(1, least(9999, (it ->> 'cantidad')::int))
       else 1
     end;
 
-    if (it ->> 'id') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then
+    if public.es_uuid(it ->> 'id') then
       update public.productos
          set stock = greatest(coalesce(stock, 0) - v_cant, 0)
        where id = (it ->> 'id')::uuid;
@@ -534,13 +536,16 @@ security definer
 set search_path = public, pg_temp
 as $$
 begin
-  if p_codigo is null or p_codigo !~ '^BS-[0-9]{6}$' then
+  if coalesce(p_codigo, '') = ''
+     or length(p_codigo) <> 8
+     or left(p_codigo, 3) <> 'BS-'
+     or translate(substr(p_codigo, 4), '0123456789', '') <> '' then
     return;
   end if;
   return query
     select s.codigo, s.estado, s.created_at, s.fecha_cierre, s.fecha_garantia,
            s.metodo_pago,
-           case when coalesce(s.detalles ->> 'total','') ~ '^[0-9]{1,12}$'
+           case when public.es_entero(s.detalles ->> 'total', 12)
                 then (s.detalles ->> 'total')::int else null end,
            s.detalles -> 'items',
            s.stock_descontado
@@ -555,26 +560,69 @@ grant execute on function public.consultar_pedido(text) to anon, authenticated;
 -- Normaliza y valida la ruta (o URL) de un archivo de un bucket privado.
 -- Acepta únicamente:
 --   1) ruta relativa  ->  comprobantes/uuid.jpg   (o con "/" inicial)
---   2) URL pública de ese mismo bucket en un proyecto *.supabase.co
+--   2) URL de ese mismo bucket en un proyecto *.supabase.co
 -- Cualquier otra cosa se guarda como texto vacío, de modo que nadie pueda
 -- inyectar rutas de otros buckets ni destinos externos.
+--
+-- IMPORTANTE: esta función NO usa expresiones regulares. Se valida con
+-- translate()/position()/substr(), porque un patrón mal formado provoca el error
+-- 2201B ("invalid regular expression: invalid repetition count(s)") y hace que
+-- NINGÚN pedido pueda guardarse.
 create or replace function public.ruta_archivo_privada(p_valor text, p_bucket text)
 returns text
-language sql
+language plpgsql
 immutable
 as $$
-  with b as (
-    select regexp_replace(lower(coalesce(p_bucket, '')), '[^a-z_]', '', 'g') as nombre
-  )
-  select case
-    when coalesce(p_valor, '') ~ ('^/?' || b.nombre || '/[A-Za-z0-9._/-]{3,300}$')
-         and coalesce(p_valor, '') not like '%..%'
-      then ltrim(p_valor, '/')
-    when coalesce(p_valor, '') ~ ('^https://[A-Za-z0-9.-]+\.supabase\.co/storage/v1/object/(public|sign|render)/' || b.nombre || '/[A-Za-z0-9._/-]{3,300}(\?[A-Za-z0-9=&%._~-]{1,500})?$')
-      then left(p_valor, 400)
-    else ''
-  end
-  from b where b.nombre <> '';
+declare
+  v      text;
+  v_low  text;
+  b      text;
+  marca  constant text := '/storage/v1/object/';
+  tipo   text;
+  i      integer;
+  v_pref text;
+  v_host text;
+begin
+  b := lower(coalesce(p_bucket, ''));
+  -- El nombre del bucket solo puede contener [a-z_] (translate deja los sobrantes)
+  if b = '' or translate(b, 'abcdefghijklmnopqrstuvwxyz_', '') <> '' then
+    return '';
+  end if;
+
+  v := ltrim(coalesce(p_valor, ''), '/');
+  if v = '' or length(v) > 500 or position('..' in v) > 0 then
+    return '';
+  end if;
+
+  v_low := lower(v);
+  if substr(v, 1, 8) = 'https://' then
+    -- Solo URLs https de un proyecto Supabase propio
+    v_host := split_part(substr(v, 9), '/', 1);
+    if v_host not like '%.supabase.co' then return ''; end if;
+    v := split_part(v, '?', 1);                    -- quita la query (?token=...)
+    v_low := lower(v);
+    i := position(marca in v_low);
+    if i = 0 then return ''; end if;
+    tipo := lower(split_part(substr(v, i + length(marca)), '/', 1));
+    if tipo not in ('public', 'sign', 'render') then return ''; end if;
+    -- salta: marca + tipo + "/"  (i es 1-based, por eso +1)
+    v := substr(v, i + length(marca) + length(tipo) + 1);
+  elsif v_low like 'http%' then
+    return '';                                    -- http:// u otros esquemas
+  end if;
+
+  -- Debe pertenecer exactamente a este bucket
+  v_pref := b || '/';
+  if lower(substr(v, 1, length(v_pref))) <> v_pref then return ''; end if;
+  v := v_pref || substr(v, length(v_pref) + 1);
+
+  -- La clave del archivo solo admite caracteres seguros (sin query, sin %20...)
+  if length(v) > 300 or translate(v, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/', '') <> '' then
+    return '';
+  end if;
+
+  return v;
+end;
 $$;
 
 revoke all on function public.ruta_archivo_privada(text, text) from public;
@@ -603,17 +651,23 @@ declare
   r public.solicitudes;
   v_det jsonb := coalesce(p_detalles, '{}'::jsonb);
   v_items jsonb := '[]'::jsonb;
+  v_tot text;
 begin
+  -- IMPORTANTE: las validaciones de esta función NO usan expresiones regulares
+  -- (translate() en lugar de ~ / regexp_*). Un patrón mal formado aborta TODOS
+  -- los pedidos con el error 2201B "invalid regular expression".
+  v_tot := coalesce(v_det ->> 'total', '');
+  if not public.es_entero(v_tot, 12) then v_tot := null; end if;
+
   if jsonb_typeof(v_det -> 'items') = 'array' then
     select coalesce(jsonb_agg(jsonb_strip_nulls(jsonb_build_object(
-             'id', case when it ->> 'id' ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-                        then lower(it ->> 'id') end,
-             'nombre', left(regexp_replace(coalesce(it ->> 'nombre', ''), '[<>"]', '', 'g'), 120),
-             'presentacion', left(regexp_replace(coalesce(it ->> 'presentacion', ''), '[<>"]', '', 'g'), 40),
-             'categoria', left(regexp_replace(coalesce(it ->> 'categoria', ''), '[<>"]', '', 'g'), 40),
-             'cantidad', case when coalesce(it ->> 'cantidad', '') ~ '^[0-9]{1,4}$'
+             'id', case when public.es_uuid(it ->> 'id') then lower(it ->> 'id') end,
+             'nombre', left(translate(coalesce(it ->> 'nombre', ''), '<>"', ''), 120),
+             'presentacion', left(translate(coalesce(it ->> 'presentacion', ''), '<>"', ''), 40),
+             'categoria', left(translate(coalesce(it ->> 'categoria', ''), '<>"', ''), 40),
+             'cantidad', case when public.es_entero(it ->> 'cantidad', 4)
                               then greatest(1, least(9999, (it ->> 'cantidad')::int)) else 1 end,
-             'subtotal', case when coalesce(it ->> 'subtotal', '') ~ '^[0-9]{1,12}$'
+             'subtotal', case when public.es_entero(it ->> 'subtotal', 12)
                               then (it ->> 'subtotal')::int end
            )) order by ord), '[]'::jsonb)
       into v_items
@@ -626,8 +680,7 @@ begin
 
   v_det := jsonb_build_object(
     'items', v_items,
-    'total', case when coalesce(v_det ->> 'total', '') ~ '^[0-9]{1,12}$'
-                   then (v_det ->> 'total')::int end
+    'total', v_tot::int
   );
 
   insert into public.solicitudes
@@ -636,7 +689,7 @@ begin
   values
     ('pedido',
      left(trim(coalesce(p_nombre, '')), 120),
-     left(regexp_replace(coalesce(p_whatsapp, ''), '[^0-9]', '', 'g'), 20),
+      left(public.solo_digitos(p_whatsapp), 20),
      left(lower(trim(coalesce(p_correo, ''))), 160),
      v_det,
      left(coalesce(p_mensaje_wa, ''), 8000),
@@ -668,21 +721,21 @@ as $$
 declare
   r public.solicitudes;
   v_det jsonb := coalesce(p_detalles, '{}'::jsonb);
-  v_txt text;
+  v_tot text;
 begin
   -- Solo se conservan los textos del asistente de torta personalizada
-  v_txt := '[\[\]{}<>"]';
+  v_tot := coalesce(v_det ->> 'total', '');
+  if not public.es_entero(v_tot, 12) then v_tot := null; end if;
   v_det := jsonb_build_object(
     'tipo', 'torta_personalizada',
-    'tamano', left(regexp_replace(coalesce(v_det ->> 'tamano', ''), v_txt, '', 'g'), 60),
-    'sabor', left(regexp_replace(coalesce(v_det ->> 'sabor', ''), v_txt, '', 'g'), 60),
-    'ocasion', left(regexp_replace(coalesce(v_det ->> 'ocasion', ''), v_txt, '', 'g'), 120),
+    'tamano', left(translate(coalesce(v_det ->> 'tamano', ''), '[]{}<>"', ''), 60),
+    'sabor', left(translate(coalesce(v_det ->> 'sabor', ''), '[]{}<>"', ''), 60),
+    'ocasion', left(translate(coalesce(v_det ->> 'ocasion', ''), '[]{}<>"', ''), 120),
     'fecha', left(coalesce(v_det ->> 'fecha', ''), 20),
-    'decoracion', left(regexp_replace(coalesce(v_det ->> 'decoracion', ''), v_txt, '', 'g'), 400),
-    'mensaje', left(regexp_replace(coalesce(v_det ->> 'mensaje', ''), v_txt, '', 'g'), 1000),
+    'decoracion', left(translate(coalesce(v_det ->> 'decoracion', ''), '[]{}<>"', ''), 400),
+    'mensaje', left(translate(coalesce(v_det ->> 'mensaje', ''), '[]{}<>"', ''), 1000),
      'referencia_url', public.ruta_archivo_privada(v_det ->> 'referencia_url', 'referencias'),
-    'total', case when coalesce(v_det ->> 'total', '') ~ '^[0-9]{1,12}$'
-                   then (v_det ->> 'total')::int end
+    'total', v_tot::int
   );
 
   insert into public.solicitudes
@@ -691,7 +744,7 @@ begin
   values
     ('encargo',
      left(trim(coalesce(p_nombre, '')), 120),
-     left(regexp_replace(coalesce(p_whatsapp, ''), '[^0-9]', '', 'g'), 20),
+      left(public.solo_digitos(p_whatsapp), 20),
      left(lower(trim(coalesce(p_correo, ''))), 160),
      v_det,
      left(coalesce(p_mensaje_wa, ''), 8000),

@@ -40,18 +40,30 @@ img/                Recursos (logo)
 - **Garantía:** nuevo estado del flujo (`nueva → vista → atendida → garantía → cerrada`). Al pasarlo a garantía se registra la fecha.
 - **Ventas y garantías:** pestaña "Ventas" del panel con resumen (ventas cerradas, ingresos estimados, unidades vendidas, garantías activas) y el registro completo con "hace X días" desde el cierre para controlar las garantías.
 - **Contabilidad:** pestaña del panel con utilidad mensual (Ingresos − Costo de ventas − Gastos), desglose por pedidos/encargos, margen y registro de **gastos** por categoría (insumos, mano de obra, empaques, servicios…). El costo de cada producto se captura en su formulario.
-- **Correo masivo a clientes:** pestaña "Correos": lista de clientes únicos por correo (vista `clientes`, dedup de pedidos y encargos), selección múltiple y redactor con `{{nombre}}`, envía con **EmailJS** y guarda el historial de envíos (`envios`).
-- **Admin:** botón de candado en el footer → `admin.html` → login con Supabase Auth (email + contraseña). Gestión de productos, pedidos (incl. encargos con "Cotizar valor"), ventas, banners, clientes felices, contabilidad y correos.
+- **Admin:** botón de candado en el footer → `admin.html` → login con Supabase Auth (email + contraseña). Gestión de productos, pedidos (incl. encargos con "Cotizar valor"), ventas, banners, clientes felices y contabilidad.
 
 ## Seguridad aplicada
 
-- **RLS en todas las tablas.** El catálogo y la galería activa se leen sin sesión; `productos.costo` se le negate a `anon`; pedidos, gastos, correos y banners solo los lee y escribe un administrador.
+- **RLS en todas las tablas.** El catálogo y la galería activa se leen sin sesión; `productos.costo` se le negate a `anon`; pedidos, gastos y banners solo los lee y escribe un administrador.
 - **Allowlist de administradores:** la tabla `public.admins` (email + nombre) y la función `public.es_admin()` deciden quién entra al panel. El login del admin verifica el rol y cierra la sesión si el usuario no está en la lista.
 - **Escrituras sanitizadas en el servidor:** los clientes no pueden insertar pedidos ni encargos directamente; usan las funciones `security definer` `crear_pedido` y `crear_encargo`, que limpian textos, fijan `estado = 'nueva'`, ignoran precios ajenos y aceptan comprobantes solo del bucket correspondiente (`ruta_archivo_privada`).
 - **Buckets privados:** `comprobantes` y `referencias` son privados. La tienda sube el archivo (con límite de tasa) y guarda solo la **ruta**; el panel la abre con una **URL firmada** de 1 hora, nunca una ruta pública.
 - **Cierre de venta controlado:** `cerrar_venta` valida que quien llama sea admin, descuenta stock una sola vez y guarda el costo de lo vendido.
 - **XSS:** todo el contenido de la base de datos se escapa antes de pintarse y las URLs de imagen se validan contra el dominio del proyecto.
 - **Anti-abuso:** honeypot, enfriamiento de 60 s por navegador y límite de subidas anónimas en `solicitudes_anti_spam`.
+- **Sin expresiones regulares en la ruta del pedido:** las validaciones usan `translate()`/`position()`/`substr()` en lugar del operador `~`. Un patrón mal formado hace que PostgreSQL rechace **todos** los pedidos con el error `2201B invalid regular expression: invalid repetition count(s)`. Si algún día se edita el SQL, mantener esta regla.
+
+## Si un pedido no se guarda
+
+El sitio **nunca** muestra "pedido recibido" si la base de datos falló: avisa y ofrece WhatsApp. Para saber qué pasó:
+
+1. Abre la consola del navegador (F12) y revisa el error de `crear_pedido`.
+2. Códigos frecuentes:
+   - `2201B` / `invalid regular expression` → `supabase.sql` está desactualizado: vuélvelo a ejecutar.
+   - `PGRST202` / `function not found` → falta ejecutar `supabase.sql`.
+   - `42501` / `row-level security` → faltan permisos: vuelve a ejecutar `supabase.sql`.
+   - `Demasiadas solicitudes` → anti-spam; espera unos minutos.
+3. Recuerda: si cambiaste el SQL, **siempre** vuelve a pegarlo en el SQL Editor. La tienda no inserta pedidos por otra vía (a propósito, por seguridad).
 
 ## Configuración inicial (una sola vez)
 
@@ -60,19 +72,16 @@ img/                Recursos (logo)
 3. En `js/config.js` verifica la **URL** y la **publishable key** de tu proyecto.
 4. Crea tu usuario admin en **Authentication → Users → Add user** y luego ejecuta el paso 2 (o inserta tu correo en `public.admins`).
 5. En **Authentication → Sign In / Providers**, desactiva el registro público por email: el panel solo debe abrirse con usuarios que tú creaste.
-6. Cambia `WHATSAPP_NUMERO` en `js/store.js` por tu número real (solo dígitos, con clave de país).
-7. *(Opcional, correo masivo)* Crea tu cuenta en [emailjs.com](https://www.emailjs.com), crea servicio + plantilla con las variables `to_email`, `to_name`, `subject` y `message`, y pega `public_key`, `service_id` y `template_id` en `js/config.js` (`EMAILJS_CONFIG`).
-8. Sube los cambios a tu repo; Vercel despliega solo (proyecto estático).
+6. Revisa `WHATSAPP_NUMERO` en `js/store.js` (ya viene con el número real de la pastelería: `573132475495`, formato 57 + 10 dígitos).
+7. Sube los cambios a tu repo; Vercel despliega solo (proyecto estático).
 
 > Si necesitas más de un administrador, inserta su correo en `public.admins`:
 > `insert into public.admins (email) values ('tu@correo.com');`
 
 ## Pendientes de personalizar
 
-- **WhatsApp:** reemplaza `WHATSAPP_NUMERO` en `js/store.js` (actualmente `573000000000`, un número de ejemplo).
-- **Redes sociales:** los enlaces de WhatsApp, Instagram y TikTok están como `#` en `index.html` (navbar, sección contacto y footer). Pon los reales cuando los tengas.
+- **Redes sociales:** los enlaces de WhatsApp, Instagram y TikTok están como `#` en `index.html` (navbar, sección contacto y footer). Pon los reales cuando los tengas. El de WhatsApp ya usa el número de la pastelería.
 - **Correo de contacto:** en `index.html` está `contacto@benditosabor.com` (placeholder).
-- **EmailJS:** `js/config.js` trae marcadores `TU-EMAILJS-*`; sin ellos, el botón de envío masivo queda bloqueado. Configúralos en la pestaña "Correos" del admin.
 - **Texto de garantía/condiciones:** redactado genérico en las secciones `#garantia` y `#condiciones` de `index.html`; ajústalo a tu política real.
 - **Datos de consignación:** la sección "¿A dónde consignar?" (`#pagos` en `index.html`) trae datos genéricos para Nequi, Bancolombia, Daviplata y Efecty; reemplaza número/alias/titular por los reales.
 
@@ -104,10 +113,9 @@ img/                Recursos (logo)
 | `admins` | Allowlist de administradores (`es_admin()`) | Solo service role |
 | `solicitudes` | Pedidos y encargos de la tienda | Lectura y escritura vía RPC sanitizadas |
 | `gastos` | Gastos de contabilidad | Solo admin |
-| `envios` | Historial de correos masivos | Solo admin |
 | `banners` | Publicidad superior | Lectura pública de los activos |
 | `galeria` | Fotos de clientes felices | Lectura pública de las activas |
-| `clientes` (vista) | Emails únicos para el envío masivo | Solo admin |
+
 
 ## Buckets de Storage
 
@@ -117,5 +125,4 @@ img/                Recursos (logo)
 | `banners` | Sí | Admin | Todos |
 | `galeria` | Sí | Admin | Todos |
 | `comprobantes` | **No** | Visitantes (con límite de tasa) | Admin (URL firmada) |
-| `referencias` | **No** | Visitantes (con límite de tasa) | Admin (URL firmada) |#   b e n d i t o s a b o r  
- 
+| `referencias` | **No** | Visitantes (con límite de tasa) | Admin (URL firmada) |

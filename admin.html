@@ -50,7 +50,6 @@
         <button class="nav-link" id="btnNavPedidos" title="Pedidos"><i class="fa-solid fa-bag-shopping"></i><span>Pedidos</span><em class="nav-badge" id="badgePedidos">0</em></button>
         <button class="nav-link" id="btnNavVentas" title="Ventas y garantías"><i class="fa-solid fa-chart-line"></i><span>Ventas</span></button>
         <button class="nav-link" id="btnNavContabilidad" title="Contabilidad"><i class="fa-solid fa-calculator"></i><span>Contabilidad</span></button>
-        <button class="nav-link" id="btnNavCorreos" title="Correos masivos"><i class="fa-solid fa-paper-plane"></i><span>Correos</span></button>
         <button class="nav-link" id="btnNavBanners" title="Publicidad"><i class="fa-solid fa-bullhorn"></i><span>Publicidad</span></button>
         <button class="nav-link" id="btnNavGaleria" title="Clientes felices"><i class="fa-solid fa-camera-retro"></i><span>Clientes felices</span></button>
         <a class="nav-link" href="index.html" target="_blank" title="Ver tienda"><i class="fa-solid fa-store"></i><span>Ver tienda</span></a>
@@ -211,49 +210,6 @@
             </form>
             <div class="sol-list" id="gastosList"></div>
             <div class="empty-adm hidden" id="gastosEmpty">No hay gastos registrados en este mes.</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- CORREOS MASIVOS -->
-      <section class="view-sec hidden" id="correosView">
-        <div class="adm-top">
-          <div>
-            <h1>Correos y clientes</h1>
-            <p class="sub">Envía novedades, promociones o recordatorios a tus clientes por correo</p>
-          </div>
-        </div>
-
-        <div class="correo-config">
-          <i class="fa-solid fa-circle-info"></i>
-          <div><b>Aviso:</b> los envíos se realizan con <b>EmailJS</b> desde tu navegador. Configura tu <code>public key</code>, <code>service</code> y <code>template</code> en <code>js/config.js</code>. El plan gratuito permite ~200 correos/mes. En EmailJS crea una plantilla con las variables <code>to_email</code>, <code>to_name</code>, <code>subject</code> y <code>message</code>.</div>
-        </div>
-
-        <div class="correo-grid">
-          <div class="correo-card">
-            <h3><i class="fa-solid fa-users"></i> Clientes (correo)</h3>
-            <label class="chk" style="margin-bottom:.8rem;display:flex;align-items:center;gap:.5rem;background:var(--crema);border-radius:12px;padding:.6rem .9rem;">
-              <input type="checkbox" id="clienteSeleccionarTodos"> <b>Seleccionar todos</b>
-            </label>
-            <div class="cliente-select-info" id="clienteSelInfo">0 clientes seleccionados</div>
-            <div class="sol-list" id="clientesList"></div>
-            <div class="empty-adm hidden" id="clientesEmpty">Aún no hay clientes con correo. Los pedidos y encargos de la tienda que incluyan correo aparecerán aquí (un registro por correo).</div>
-          </div>
-
-          <div class="correo-card redactor">
-            <h3><i class="fa-solid fa-envelope-open-text"></i> Redactar y enviar</h3>
-            <label>Asunto<input type="text" id="emailAsunto" placeholder="Ej: Novedades de Bendito Sabor"></label>
-            <label>Mensaje
-              <textarea id="emailCuerpo" placeholder="Hola {{nombre}}, tenemos novedades…"></textarea>
-            </label>
-            <p class="cursor"><i class="fa-solid fa-wand-magic-sparkles"></i> Usa <code>{{nombre}}</code> para saludar a cada cliente por su nombre.</p>
-            <button class="btn primary block enviar" id="btnEnviarCorreo"><i class="fa-solid fa-paper-plane"></i> Enviar a los seleccionados</button>
-
-            <div class="correo-hist">
-              <h3 style="margin:.9rem 0 .6rem;"><i class="fa-solid fa-clock-rotate-left"></i> Envíos anteriores</h3>
-              <div id="enviosList"></div>
-              <div class="empty-adm hidden" id="enviosEmpty">Todavía no has enviado correos masivos.</div>
-            </div>
           </div>
         </div>
       </section>

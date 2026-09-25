@@ -8,9 +8,9 @@ let sb = null;
 let cuentasDB = [];
 let cuentasById = new Map();
 
-/* 👉 REEMPLAZA por tu número de WhatsApp con código de país (57 = Colombia)
-   Ej: 573001234567. Sin esto los pedidos no se pueden entregar.          */
-const WHATSAPP_NUMERO = '573000000000';
+/* 👉 Número de WhatsApp de la pastelería, con código de país (57 = Colombia)
+   Formato: 57 + 10 dígitos, sin +, sin espacios.                            */
+const WHATSAPP_NUMERO = '573132475495';
 
 let carrito = cargarCarrito();
 let filtroActivo = 'todos';
@@ -168,12 +168,12 @@ async function cargarGaleria(){
   return data || [];
 }
 
-/* Guarda el pedido en Supabase sin bloquear el flujo de WhatsApp.
-   Devuelve la fila insertada (incluye el codigo de seguimiento) o null.
-   Usa la funcion security definer crear_pedido para que el cliente anon
-   pueda recibir el codigo sin depender de la politica de SELECT. */
+/* Guarda el pedido en Supabase.
+   Devuelve { fila } si se guardo bien o { error } si fallo.
+   IMPORTANTE: nunca se oculta el error. Un fallo silencioso hace creer al
+   cliente que el pedido quedo registrado cuando en realidad no existe. */
 async function registrarPedido(nombre, whatsapp, correo, detalles, mensaje_wa, metodo_pago, comprobante_path){
-  if(!sb) return null;
+  if(!sb) return { error: new Error('sin-conexion') };
   try{
     const { data, error } = await sb.rpc('crear_pedido', {
       p_nombre: nombre,
@@ -184,12 +184,32 @@ async function registrarPedido(nombre, whatsapp, correo, detalles, mensaje_wa, m
       p_metodo_pago: metodo_pago || '',
       p_comprobante_url: comprobante_path || ''
     });
-    if(error){ console.warn('No se pudo guardar el pedido en Supabase:', error.message); return null; }
-    return data || null;
+    if(error){ console.error('crear_pedido fallo:', error); return { error: error }; }
+    if(!data) return { error: new Error('respuesta vacia') };
+    return { fila: data };
   }catch(e){
-    console.warn('No se pudo guardar el pedido en Supabase:', e);
-    return null;
+    console.error('crear_pedido lanzo excepcion:', e);
+    return { error: e };
   }
+}
+
+/* Convierte el error de Supabase en un texto util para el cliente. */
+function explicarErrorPedido(err){
+  const code = (err && (err.code || err.errorCode)) || '';
+  const msg  = String((err && (err.message || err.details || err.hint)) || err || '');
+  if(code === 'PGRST202' || /no se pudo encontrar la funci|function .* not found|schema cache/i.test(msg))
+    return 'El servidor de pedidos esta desactualizado. El sitio necesita que se ejecute de nuevo supabase.sql.';
+  if(code === '42501' || /row-level security|violates row level security|permission denied/i.test(msg))
+    return 'Supabase rechazo el guardado por permisos. Ejecuta de nuevo supabase.sql en el SQL Editor.';
+  if(/invalid regular expression|2201B/i.test(msg))
+    return 'Hay un error en la base de datos (supabase.sql desactualizado). Ejecutalo de nuevo.';
+  if(/demasiadas solicitudes/i.test(msg))
+    return 'El filtro anti-spam detuvo el envio (demasiados pedidos seguidos). Espera unos minutos o escribenos por WhatsApp.';
+  if(/demasiado larga/i.test(msg))
+    return 'El pedido tiene demasiados productos. Envialo por WhatsApp para que lo armemos contigo.';
+  if(/no v/i.test(msg))
+    return 'El envio fue rechazado por la validacion del servidor. Revisa los datos o escribenos por WhatsApp.';
+  return 'No pudimos guardar el pedido en la base de datos.';
 }
 
 /* =============================================================== */
@@ -973,6 +993,7 @@ document.getElementById('orderForm').addEventListener('submit', async function(e
 
   let codigo = '';
   let aviso = '';
+  let falloGuardado = '';
   try{
     let comprobante_path = '';
     if(comprobanteFile){
@@ -980,7 +1001,7 @@ document.getElementById('orderForm').addEventListener('submit', async function(e
       catch(err){ console.warn('No se pudo subir el comprobante', err); aviso = 'No pudimos adjuntar tu comprobante; envíalo por WhatsApp.'; }
     }
 
-    const fila = await registrarPedido(
+    const res = await registrarPedido(
       nombre,
       (document.getElementById('oWhats').value||'').trim(),
       (document.getElementById('oCorreo').value||'').trim(),
@@ -992,15 +1013,20 @@ document.getElementById('orderForm').addEventListener('submit', async function(e
       metodo,
       comprobante_path
     );
-    if(fila && fila.codigo) codigo = fila.codigo;
-    else aviso = aviso || 'Guarda esta conversación: te confirmamos el pedido por WhatsApp.';
+    if(res.error){
+      falloGuardado = explicarErrorPedido(res.error);
+    }else{
+      if(res.fila && res.fila.codigo) codigo = res.fila.codigo;
+      else falloGuardado = 'El servidor no devolvio el numero de seguimiento.';
+    }
   }catch(err){
     console.error('Error enviando el pedido', err);
-    aviso = 'No pudimos guardar tu pedido en la base de datos, pero puedes completarlo por WhatsApp.';
+    falloGuardado = explicarErrorPedido(err);
   }
 
   /* El pedido NUNCA se pierde: aunque la base de datos falle, el cliente
-     siempre puede enviar su mensaje por WhatsApp. */
+     siempre puede enviar su mensaje por WhatsApp. Pero si no se guardo, se
+     dice con claridad: nunca se muestra "exito" cuando no se registro nada. */
   let msgWA = msg;
   if(codigo) msgWA += '\n\nNo. de seguimiento: ' + codigo + ' (guárdalo para consultar tu pedido)';
   const wa = document.getElementById('waOrderBtn');
@@ -1018,8 +1044,16 @@ document.getElementById('orderForm').addEventListener('submit', async function(e
   document.getElementById('orderSuccess').classList.add('show');
   carrito = [];
   guardarCarrito();
-  marcarAnti('pedido');
-  if(aviso) toast(aviso,'warn'); else toast('¡Pedido recibido con éxito!','success');
+  /* Solo se marca el anti-repetición si el pedido REALMENTE se guardó.
+     Si falló, el cliente debe poder reintentar sin ver "ya enviaste un pedido". */
+  if(!falloGuardado) marcarAnti('pedido');
+  if(falloGuardado){
+    toast(falloGuardado + (aviso ? ' ' + aviso : '') + ' Envíalo por WhatsApp para no perderlo.', 'warn', '', 9000);
+  }else if(aviso){
+    toast(aviso, 'warn', '', 7000);
+  }else{
+    toast('¡Pedido recibido con éxito!', 'success');
+  }
   if(btn){ btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Enviar solicitud'; }
 });
 
@@ -1217,9 +1251,10 @@ if(refDrop){
   document.getElementById('refQuitar').addEventListener('click', e=>{ e.stopPropagation(); limpiarRefUI(false); });
 }
 
-/* Guarda el encargo en Supabase (tipo='encargo'), devuelve la fila */
+/* Guarda el encargo en Supabase (tipo='encargo').
+   Devuelve { fila } o { error }; nunca oculta el fallo. */
 async function registrarEncargo(nombre, whatsapp, correo, detalles, mensaje_wa, referencia_path){
-  if(!sb) return null;
+  if(!sb) return { error: new Error('sin-conexion') };
   try{
     const { data, error } = await sb.rpc('crear_encargo', {
       p_nombre: nombre,
@@ -1229,11 +1264,12 @@ async function registrarEncargo(nombre, whatsapp, correo, detalles, mensaje_wa, 
       p_mensaje_wa: mensaje_wa,
       p_comprobante_url: referencia_path || ''
     });
-    if(error){ console.warn('No se pudo guardar el encargo en Supabase:', error.message); return null; }
-    return data || null;
+    if(error){ console.error('crear_encargo fallo:', error); return { error: error }; }
+    if(!data) return { error: new Error('respuesta vacia') };
+    return { fila: data };
   }catch(e){
-    console.warn('No se pudo guardar el encargo en Supabase:', e);
-    return null;
+    console.error('crear_encargo lanzo excepcion:', e);
+    return { error: e };
   }
 }
 
@@ -1267,6 +1303,7 @@ async function enviarEncargo(btn){
   let referenciaPath = '';
   let codigo = '';
   let aviso = '';
+  let falloGuardado = '';
   try{
     if(cakeEstado.referenciaFile){
       try{ referenciaPath = await subirArchivoPrivado(cakeEstado.referenciaFile, 'referencias', 'referencias'); }
@@ -1303,7 +1340,7 @@ async function enviarEncargo(btn){
       '\nCorreo: ' + cakeEstado.correo +
       '\n\nMe contactan por WhatsApp para confirmar precio, disponibilidad y fecha de entrega. ¡Gracias!';
 
-    const fila = await registrarEncargo(
+    const resE = await registrarEncargo(
       cakeEstado.nombre,
       cakeEstado.whats.replace(/[^0-9]/g, ''),
       cakeEstado.correo,
@@ -1311,8 +1348,9 @@ async function enviarEncargo(btn){
       msg,
       referenciaPath
     );
-    if(fila && fila.codigo) codigo = fila.codigo;
-    else aviso = aviso || 'Guarda esta conversación: te confirmamos el encargo por WhatsApp.';
+    if(resE.error) falloGuardado = explicarErrorPedido(resE.error);
+    else if(resE.fila && resE.fila.codigo) codigo = resE.fila.codigo;
+    else falloGuardado = 'El servidor no devolvio el numero de seguimiento.';
 
     const wa = document.getElementById('waEncargoBtn');
     if(wa) wa.href = waEnlace(msg + (codigo ? '\n\nNo. de seguimiento: ' + codigo + ' (guárdalo para consultar tu encargo)' : ''));
@@ -1332,8 +1370,14 @@ async function enviarEncargo(btn){
     document.getElementById('cakeHead').style.display = 'none';
     document.getElementById('cakeBodyWrap').style.display = 'none';
     document.getElementById('cakeFoot').style.display = 'none';
-    marcarAnti('encargo');
-    if(aviso) toast(aviso,'warn'); else toast('¡Encargo enviado con éxito!','success');
+    if(!falloGuardado) marcarAnti('encargo');
+    if(falloGuardado){
+      toast(falloGuardado + (aviso ? ' ' + aviso : '') + ' Envíalo por WhatsApp para no perderlo.', 'warn', '', 9000);
+    }else if(aviso){
+      toast(aviso, 'warn', '', 7000);
+    }else{
+      toast('¡Encargo enviado con éxito!', 'success');
+    }
   }catch(err){
     console.error('Error enviando el encargo', err);
     toast('Ocurrió un problema. Revisa los datos e intenta de nuevo.','warn');
@@ -1347,7 +1391,7 @@ async function enviarEncargo(btn){
 /* TOASTS                                                          */
 /* =============================================================== */
 /* `mensaje` siempre se escapa. `nombre` se pinta en negrita, también escapado. */
-function toast(mensaje, tipo, nombre){
+function toast(mensaje, tipo, nombre, ms){
   const cont = document.getElementById('toastWrap');
   if(!cont) return;
   const ico = tipo === 'warn' ? 'fa-triangle-exclamation' : tipo === 'success' ? 'fa-circle-check' : 'fa-cake-candles';
@@ -1362,7 +1406,7 @@ function toast(mensaje, tipo, nombre){
   setTimeout(()=>{
     t.classList.remove('show');
     setTimeout(()=>t.remove(), 500);
-  }, 3200);
+  }, typeof ms === 'number' ? ms : 3200);
 }
 
 /* =============================================================== */

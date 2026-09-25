@@ -298,28 +298,24 @@ function setVista(v){
   const esGal = v === 'galeria';
   const esVen = v === 'ventas';
   const esCont = v === 'contabilidad';
-  const esCor = v === 'correos';
-  const esProd = !(esPed || esBan || esGal || esVen || esCont || esCor);
+  const esProd = !(esPed || esBan || esGal || esVen || esCont);
   $('productosView').classList.toggle('hidden', !esProd);
   $('pedidosView').classList.toggle('hidden', !esPed);
   $('bannersView').classList.toggle('hidden', !esBan);
   $('galeriaView').classList.toggle('hidden', !esGal);
   $('ventasView').classList.toggle('hidden', !esVen);
   $('contabilidadView').classList.toggle('hidden', !esCont);
-  $('correosView').classList.toggle('hidden', !esCor);
   $('btnNavProductos').classList.toggle('active', esProd);
   $('btnNavPedidos').classList.toggle('active', esPed);
   $('btnNavBanners').classList.toggle('active', esBan);
   $('btnNavGaleria').classList.toggle('active', esGal);
   $('btnNavVentas').classList.toggle('active', esVen);
   $('btnNavContabilidad').classList.toggle('active', esCont);
-  $('btnNavCorreos').classList.toggle('active', esCor);
   if(esPed) renderPedidos();
   if(esBan) cargarBanners();
   if(esGal) cargarGaleria();
   if(esVen) renderVentas();
   if(esCont){ inicializarContabilidad(); cargarGastos(); }
-  if(esCor){ cargarClientes(); cargarEnvios(); }
 }
 
 function estadoLabel(e){ return ({nueva:'Nueva',vista:'Vista',atendida:'Atendida',garantia:'Garantía',cerrada:'Cerrada'})[e]||e; }
@@ -1202,120 +1198,6 @@ async function eliminarGasto(id){
   toast('Gasto eliminado');
 }
 
-/* ---------- Correos masivos (EmailJS) ---------- */
-let clientesDB = [];
-let enviosDB = [];
-let clientesSel = new Set();
-
-async function cargarClientes(){
-  const { data, error } = await sb.from('clientes').select('*');
-  if(error){ toast('No se pudieron cargar los clientes','error'); return; }
-  clientesDB = (data || []).map(c=>({ correo: c.correo, nombre: c.nombre || '', whatsapp: c.whatsapp || '', ultimo_pedido: c.ultimo_pedido, pedidos: c.pedidos || 0 }));
-  clientesSel = new Set();
-  renderClientes();
-}
-
-function renderClientes(){
-  $('clientesEmpty').classList.toggle('hidden', clientesDB.length > 0);
-  $('clientesList').innerHTML = clientesDB.map(c=>
-    '<label class="cliente-row">'+
-      '<input type="checkbox" data-email="'+esc(c.correo)+'" '+(clientesSel.has(c.correo)?'checked':'')+' onchange="toggleCliente(this)">'+
-      '<div class="cliente-info"><b>'+esc(c.nombre || c.correo)+'</b><span>'+esc(c.correo)+'</span></div>'+
-      '<span class="cliente-ped">'+c.pedidos+' pedido(s)</span>'+
-    '</label>'
-  ).join('');
-  actualizarSelInfo();
-}
-
-function actualizarSelInfo(){
-  $('clienteSelInfo').textContent = clientesSel.size + (clientesSel.size===1 ? ' cliente seleccionado' : ' clientes seleccionados');
-}
-
-function toggleCliente(chk){
-  const email = chk.dataset.email;
-  if(chk.checked) clientesSel.add(email); else clientesSel.delete(email);
-  actualizarSelInfo();
-}
-
-async function cargarEnvios(){
-  const { data, error } = await sb.from('envios').select('*').order('created_at', { ascending: false });
-  if(error){ console.warn('Error cargando envíos', error); return; }
-  enviosDB = data || [];
-  renderEnvios();
-}
-
-function renderEnvios(){
-  $('enviosEmpty').classList.toggle('hidden', enviosDB.length > 0);
-  $('enviosList').innerHTML = enviosDB.map(env=>
-    '<div class="ch-row"><i class="fa-solid fa-paper-plane" style="color:var(--naranja-oscuro);"></i><b>'+esc(env.asunto)+'</b>'+
-    '<small>'+env.enviado_ok+'/'+env.destinatarios+' ok</small>'+
-    '<small>'+new Date(env.created_at).toLocaleString('es-CO',{day:'2-digit',month:'2-digit',year:'numeric'})+'</small></div>'
-  ).join('');
-}
-
-let emailjsReady = false;
-async function emailjsDisponible(){
-  if(emailjsReady) return;
-  await new Promise((res, rej)=>{
-    const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';
-    s.onload = res;
-    s.onerror = () => rej(new Error('No se pudo cargar EmailJS'));
-    document.head.appendChild(s);
-  });
-  emailjs.init(EMAILJS_CONFIG.public_key);
-  emailjsReady = true;
-}
-
-async function enviarCorreos(){
-  const asunto = $('emailAsunto').value.trim();
-  const cuerpo = $('emailCuerpo').value.trim();
-  if(!asunto || !cuerpo){ toast('Escribe asunto y mensaje','warn'); return; }
-  const correos = clientesDB.filter(c=>clientesSel.has(c.correo));
-  if(!correos.length){ toast('Selecciona al menos un cliente','warn'); return; }
-  if(!EMAILJS_CONFIG || !EMAILJS_CONFIG.public_key || /TU-/.test(EMAILJS_CONFIG.public_key)){
-    toast('Configura EmailJS en js/config.js para poder enviar','error');
-    return;
-  }
-
-  const btn = $('btnEnviarCorreo');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando…';
-  let ok = 0, err = 0;
-  try{
-    await emailjsDisponible();
-    for(const c of correos){
-      try{
-        await emailjs.send(EMAILJS_CONFIG.service_id, EMAILJS_CONFIG.template_id, {
-          to_email: c.correo,
-          to_name: c.nombre || c.correo,
-          subject: asunto,
-          message: cuerpo.replace(/\{\{nombre\}\}/g, c.nombre || '')
-        });
-        ok++;
-      }catch(e){
-        err++;
-        console.warn('Error enviando a', c.correo, e);
-      }
-      await new Promise(r=>setTimeout(r, 400));
-    }
-    if(err === 0 || ok > 0){
-      const { error: errSave } = await sb.from('envios').insert([{
-        asunto, cuerpo, destinatarios: correos.length, enviado_ok: ok, enviado_error: err
-      }]);
-      if(errSave) console.warn('No se pudo guardar el historial del envío', errSave);
-      cargarEnvios();
-    }
-    toast('Envío terminado: '+ok+' correctos'+(err ? ', '+err+' con error' : ''));
-  }catch(e){
-    console.error(e);
-    toast('No se pudieron enviar los correos','error');
-  }finally{
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Enviar a los seleccionados';
-  }
-}
-
 /* ---------- Formulario ---------- */
 function abrirForm(id){
   editandoId = id ? String(id) : null;
@@ -1486,7 +1368,6 @@ $('btnNavVentas').addEventListener('click', ()=> setVista('ventas'));
 $('btnNavBanners').addEventListener('click', ()=> setVista('banners'));
 $('btnNavGaleria').addEventListener('click', ()=> setVista('galeria'));
 $('btnNavContabilidad').addEventListener('click', ()=> setVista('contabilidad'));
-$('btnNavCorreos').addEventListener('click', ()=> setVista('correos'));
 $('solFiltroEstado').addEventListener('change', e=>{ solFiltro = e.target.value; renderPedidos(); });
 $('solSearch').addEventListener('input', e=>{ solBusqueda = e.target.value.trim().toLowerCase(); renderPedidos(); });
 
@@ -1495,13 +1376,6 @@ $('contMes').addEventListener('change', e=>{ contMesActivo = e.target.value; ren
 $('btnNuevoGasto').addEventListener('click', abrirGastoForm);
 $('gastoForm').addEventListener('submit', guardarGasto);
 $('gCancelar').addEventListener('click', cerrarGastoForm);
-
-/* Correos */
-$('clienteSeleccionarTodos').addEventListener('change', e=>{
-  clientesSel = e.target.checked ? new Set(clientesDB.map(c=>c.correo)) : new Set();
-  renderClientes();
-});
-$('btnEnviarCorreo').addEventListener('click', enviarCorreos);
 
 /* Ventas */
 $('ventaSearch').addEventListener('input', e=>{ ventaBusqueda = e.target.value.trim().toLowerCase(); renderVentas(); });
