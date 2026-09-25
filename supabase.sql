@@ -515,6 +515,74 @@ revoke all on function public.cerrar_venta(uuid) from public;
 grant execute on function public.cerrar_venta(uuid) to authenticated;
 
 -- ---------------------------------------------------------------
+-- 8.1) ELIMINAR UNA SOLICITUD (por si la venta no se hizo)
+--     Si la venta ya habia descontado stock, lo DEVUELVE al inventario
+--     antes de borrar la fila. Sin esto el stock se perderia para siempre.
+--     Devuelve: { eliminada, stock_devuelto, unidades, productos }
+-- ---------------------------------------------------------------
+create or replace function public.eliminar_solicitud(
+  p_id uuid,
+  p_devolver_stock boolean default true
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  s public.solicitudes%rowtype;
+  it jsonb;
+  v_cant integer;
+  v_unidades integer := 0;
+  v_productos integer := 0;
+begin
+  if not public.es_admin() then
+    raise exception 'No autorizado';
+  end if;
+
+  select * into s from public.solicitudes where id = p_id;
+  if not found then
+    raise exception 'La solicitud no existe';
+  end if;
+
+  -- Devolver el stock solo tiene sentido si se habia descontado
+  if s.stock_descontado and coalesce(p_devolver_stock, true) and s.tipo = 'pedido' then
+    for it in
+      select value from jsonb_array_elements(coalesce(s.detalles -> 'items', '[]'::jsonb))
+    loop
+      v_cant := case
+        when public.es_entero(it ->> 'cantidad', 4)
+          then greatest(1, least(9999, (it ->> 'cantidad')::int))
+        else 1
+      end;
+
+      if public.es_uuid(it ->> 'id') then
+        update public.productos
+           set stock = coalesce(stock, 0) + v_cant
+         where id = (it ->> 'id')::uuid;
+        if found then
+          v_unidades  := v_unidades + v_cant;
+          v_productos := v_productos + 1;
+        end if;
+      end if;
+    end loop;
+  end if;
+
+  delete from public.solicitudes where id = p_id;
+
+  return jsonb_build_object(
+    'eliminada',      true,
+    'stock_devuelto', s.stock_descontado and coalesce(p_devolver_stock, true) and s.tipo = 'pedido',
+    'unidades',       v_unidades,
+    'productos',      v_productos
+  );
+end;
+$$;
+
+revoke all on function public.eliminar_solicitud(uuid, boolean) from public;
+grant execute on function public.eliminar_solicitud(uuid, boolean) to authenticated;
+
+-- ---------------------------------------------------------------
 -- 10) CONSULTA PÚBLICA POR CÓDIGO (no expone contacto ni comprobante)
 -- ---------------------------------------------------------------
 drop function if exists public.consultar_pedido(text);

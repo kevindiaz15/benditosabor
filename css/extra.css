@@ -135,6 +135,9 @@
 .cake-tip i{color:var(--naranja-oscuro);margin-top:.1rem;}
 .cake-foot{display:flex;gap:.6rem;justify-content:flex-end;align-items:center;padding:1rem 1.4rem 1.3rem;}
 .cake-success{display:none;flex-direction:column;align-items:center;text-align:center;padding:1.6rem 1.4rem 1.6rem;}
+/* Se muestra con .show (igual que .order-success.show). Nada de
+   style.display en línea: .hidden usa !important y lo pisaría. */
+.cake-success.show{display:flex;}
 .cake-success .big-ico{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,var(--rosa),var(--vinotinto));color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.9rem;margin-bottom:1rem;box-shadow:0 14px 30px rgba(203,115,191,.4);}
 .cake-success h3{margin:0 0 .4rem;color:var(--vinotinto);font-size:1.3rem;}
 .cake-success .order-code{margin:.4rem 0 1.2rem;}

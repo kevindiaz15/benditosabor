@@ -1190,7 +1190,7 @@ function abrirPersonalizada(){
   pintarCakeOpciones();
   document.querySelectorAll('.cake-opt').forEach(x=>x.classList.remove('sel'));
   const succ = document.getElementById('cakeSuccess');
-  succ.style.display = 'none';
+  succ.classList.remove('show');
   document.getElementById('cakeHead').style.display = '';
   document.getElementById('cakeBodyWrap').style.display = '';
   document.getElementById('cakeFoot').style.display = '';
@@ -1366,7 +1366,7 @@ async function enviarEncargo(btn){
       }
     }
 
-    document.getElementById('cakeSuccess').style.display = 'flex';
+    document.getElementById('cakeSuccess').classList.add('show');
     document.getElementById('cakeHead').style.display = 'none';
     document.getElementById('cakeBodyWrap').style.display = 'none';
     document.getElementById('cakeFoot').style.display = 'none';

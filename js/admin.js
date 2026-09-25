@@ -510,17 +510,45 @@ async function cambiarEstado(id, estado){
 }
 
 async function eliminarPedido(id){
-  if(!confirm('¿Eliminar este pedido definitivamente?')) return;
   const s = pedidos.find(x=>String(x.id)===String(id));
-  const { error } = await sb.from('solicitudes').delete().eq('id', id);
-  if(error){ toast('No se pudo eliminar','error'); return; }
+  if(!s) return;
+  const devolver = !!s.stock_descontado;
+  const detalle = devolver
+    ? '\n\nEsta venta YA descontó stock. Si la eliminas, las unidades vuelven al inventario.'
+    : '';
+  if(!confirm('¿Eliminar '+(s.codigo ? 'la venta '+s.codigo : 'este pedido')+' de '+s.nombre+'?'+detalle+'\n\nEsta acción no se puede deshacer.')) return;
+
+  /* Si el usuario se arrepiente a mitad de camino, se puede elegir no
+     devolver el stock. Por defecto se devuelve (lo coherente es no perder
+     inventario). */
+  let devolverStock = devolver;
+  if(devolver){
+    devolverStock = confirm(
+      '¿Devolver las unidades al inventario?\n\n' +
+      'Sí  -> el stock vuelve (recomendado si la venta no ocurrió)\n' +
+      'No -> el stock se queda descontado'
+    );
+  }
+
+  const { data, error } = await sb.rpc('eliminar_solicitud', {
+    p_id: id,
+    p_devolver_stock: devolverStock
+  });
+  if(error){ toast('No se pudo eliminar: '+(error.message||''), 'error'); return; }
+
   /* El adjunto vive en un bucket privado: lo borramos aparte */
-  if(s && s.comprobante_url) await quitarArchivoDeUrl(s.comprobante_url, s.tipo==='encargo' ? 'referencias' : 'comprobantes');
+  if(s.comprobante_url) await quitarArchivoDeUrl(s.comprobante_url, s.tipo==='encargo' ? 'referencias' : 'comprobantes');
   pedidos = pedidos.filter(x=>String(x.id)!==String(id));
   actualizarBadgePedidos();
   renderPedidos();
   renderVentas();
-  toast('Pedido eliminado');
+  cargarCuentas();
+
+  if(data && data.stock_devuelto && data.unidades > 0){
+    toast('Venta eliminada · ' + data.unidades + ' unidad(es) devuelta(s) al inventario', 'success');
+  }else{
+    toast('Venta eliminada');
+  }
 }
 
 /* ---------- Ventas (registro de ventas cerradas + garantías) ---------- */
@@ -578,6 +606,7 @@ function ventaCard(s){
       '<div class="sol-head-acc">'+
         '<span class="sol-estado '+s.estado+'">'+estadoLabel(s.estado)+'</span>'+
         (s.stock_descontado ? '<span class="sol-stock-tag"><i class="fa-solid fa-box"></i>Stock descontado</span>' : '')+
+        '<button class="acc-btn del" title="Eliminar esta venta" '+attrClick('eliminarPedido('+JSON.stringify(String(s.id))+')')+'><i class="fa-solid fa-trash-can"></i></button>'+
       '</div>'+
     '</div>'+
     '<div class="sol-contacto">'+
